@@ -1,4 +1,8 @@
+.idea/*
 out/*
 bin/*
 
 *.class
+*.xml
+*.html
+*.iml
