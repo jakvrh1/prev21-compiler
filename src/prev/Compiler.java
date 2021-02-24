@@ -92,6 +92,7 @@ public class Compiler {
 					}
 				}
 			}
+
 			if (cmdLine.get("--src-file-name") == null) {
 				throw new Report.Error("Source file not specified.");
 			}
@@ -111,10 +112,7 @@ public class Compiler {
 						while (lexan.lexer.nextToken().getType() != Token.EOF) {
 						}
 						break;
-					} catch(Exception e) {
-					    System.out.println(e.toString());
 					}
-
 				break;
 			}
 

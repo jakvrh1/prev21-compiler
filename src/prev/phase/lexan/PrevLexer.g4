@@ -61,7 +61,7 @@ POINTERCONST    : 'nil' ;
 
 CHARCONST       : ('\'\\\'\'') | ['][\u0020-\u0026\u0028-\u007e]['] ;
 STRINGCONST     : '"' ('\\"' | [\u0020-\u0021\u0023-\u007e])* '"' ;
-COMMENT         : '#' ~[\r\n]* ;
+COMMENT         : ('#' ~[\r\n]*) -> skip;
 INTEGERCONST    : [0-9]+ ;
 
 IDENTIFIER      : [A-Za-z_][A-Za-z_0-9]* ;

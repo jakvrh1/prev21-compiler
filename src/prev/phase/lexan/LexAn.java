@@ -63,28 +63,7 @@ public class LexAn extends Phase {
 	public class LexerErrorListener extends BaseErrorListener {
 		@Override
 		public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
-			throw new LexerError(recognizer, offendingSymbol, line, charPositionInLine, msg, e);
-		}
-	}
-
-	public class LexerError extends RuntimeException{
-	    private int line;
-	    private int charPositionLine;
-	    private String msg;
-
-		public LexerError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
-			this.line = line;
-			this.charPositionLine = charPositionInLine;
-			this.msg = msg;
-		}
-
-		@Override
-		public String toString() {
-			return "LexerError{" +
-					"line=" + line +
-					", charPositionLine=" + charPositionLine +
-					", msg='" + msg + '\'' +
-					'}';
+			throw new Report.Error(new Location(line, charPositionInLine + 1), msg);
 		}
 	}
 
