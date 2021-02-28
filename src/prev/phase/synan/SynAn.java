@@ -1,12 +1,16 @@
 package prev.phase.synan;
 
 import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.atn.ATNConfigSet;
+import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.*;
 
 import prev.common.report.*;
 import prev.data.sym.Token;
 import prev.phase.*;
 import prev.phase.lexan.*;
+
+import java.util.BitSet;
 
 /**
  * Syntax analysis phase.
@@ -31,8 +35,26 @@ public class SynAn extends Phase {
 		parser = new PrevParser(new CommonTokenStream(lexan.lexer));
 		parser.removeErrorListeners();
 		parser.addErrorListener(new BaseErrorListener() {
+			@Override
+			public void reportAmbiguity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, boolean exact, BitSet ambigAlts, ATNConfigSet configs) {
+				//super.reportAmbiguity(recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs);
+				throw new Report.Error("Error reportAmbiguity()");
+			}
+
+			@Override
+			public void reportAttemptingFullContext(Parser recognizer, DFA dfa, int startIndex, int stopIndex, BitSet conflictingAlts, ATNConfigSet configs) {
+				//super.reportAttemptingFullContext(recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs);
+				throw new Report.Error("Error reportAttemptingFullContext()");
+			}
+
+			@Override
+			public void reportContextSensitivity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, int prediction, ATNConfigSet configs) {
+				//super.reportContextSensitivity(recognizer, dfa, startIndex, stopIndex, prediction, configs);
+				throw new Report.Error("Error reportContextSensitivity()");
+			}
+
 			public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line,
-					int charPositionInLine, String msg, RecognitionException e) {
+									int charPositionInLine, String msg, RecognitionException e) {
 				throw new Report.Error(new Location(line, charPositionInLine),
 						"Unexpected symbol '" + ((Token) offendingSymbol).getText() + "'.");
 			}
