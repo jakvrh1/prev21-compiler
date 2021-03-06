@@ -22,8 +22,8 @@ public class PrevLexer extends Lexer {
 		new PredictionContextCache();
 	public static final int
 		LPAREN=1, RPAREN=2, LBRACKET=3, RBRACKET=4, LBRACE=5, RBRACE=6, DOT=7, 
-		COMMA=8, SEMIC=9, COLON=10, AND=11, NOT=12, OR=13, XOR=14, EQU=15, NEQ=16, 
-		LTH=17, GTH=18, LEQ=19, GEQ=20, ADD=21, SUB=22, PTR=23, DIV=24, MOD=25, 
+		COMMA=8, SEMIC=9, COLON=10, AND=11, NOT=12, OR=13, PTR=14, EQU=15, NEQ=16, 
+		LTH=17, GTH=18, LEQ=19, GEQ=20, ADD=21, SUB=22, MUL=23, DIV=24, MOD=25, 
 		IS=26, VOID=27, CHAR=28, INT=29, BOOL=30, DEL=31, DO=32, ELSE=33, FUN=34, 
 		IF=35, NEW=36, THEN=37, TYP=38, VAR=39, WHERE=40, WHILE=41, VOIDCONST=42, 
 		BOOLCONST=43, POINTERCONST=44, CHARCONST=45, STRINGCONST=46, COMMENT=47, 
@@ -39,8 +39,8 @@ public class PrevLexer extends Lexer {
 	private static String[] makeRuleNames() {
 		return new String[] {
 			"LPAREN", "RPAREN", "LBRACKET", "RBRACKET", "LBRACE", "RBRACE", "DOT", 
-			"COMMA", "SEMIC", "COLON", "AND", "NOT", "OR", "XOR", "EQU", "NEQ", "LTH", 
-			"GTH", "LEQ", "GEQ", "ADD", "SUB", "PTR", "DIV", "MOD", "IS", "VOID", 
+			"COMMA", "SEMIC", "COLON", "AND", "NOT", "OR", "PTR", "EQU", "NEQ", "LTH", 
+			"GTH", "LEQ", "GEQ", "ADD", "SUB", "MUL", "DIV", "MOD", "IS", "VOID", 
 			"CHAR", "INT", "BOOL", "DEL", "DO", "ELSE", "FUN", "IF", "NEW", "THEN", 
 			"TYP", "VAR", "WHERE", "WHILE", "VOIDCONST", "BOOLCONST", "POINTERCONST", 
 			"CHARCONST", "STRINGCONST", "COMMENT", "INTEGERCONST", "IDENTIFIER", 
@@ -62,8 +62,8 @@ public class PrevLexer extends Lexer {
 	private static String[] makeSymbolicNames() {
 		return new String[] {
 			null, "LPAREN", "RPAREN", "LBRACKET", "RBRACKET", "LBRACE", "RBRACE", 
-			"DOT", "COMMA", "SEMIC", "COLON", "AND", "NOT", "OR", "XOR", "EQU", "NEQ", 
-			"LTH", "GTH", "LEQ", "GEQ", "ADD", "SUB", "PTR", "DIV", "MOD", "IS", 
+			"DOT", "COMMA", "SEMIC", "COLON", "AND", "NOT", "OR", "PTR", "EQU", "NEQ", 
+			"LTH", "GTH", "LEQ", "GEQ", "ADD", "SUB", "MUL", "DIV", "MOD", "IS", 
 			"VOID", "CHAR", "INT", "BOOL", "DEL", "DO", "ELSE", "FUN", "IF", "NEW", 
 			"THEN", "TYP", "VAR", "WHERE", "WHILE", "VOIDCONST", "BOOLCONST", "POINTERCONST", 
 			"CHARCONST", "STRINGCONST", "COMMENT", "INTEGERCONST", "IDENTIFIER", 

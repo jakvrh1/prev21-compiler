@@ -1,5 +1,6 @@
 package prev.common.report;
 
+import org.antlr.v4.runtime.Token;
 import prev.common.logger.*;
 
 /**
@@ -104,6 +105,22 @@ public class Location implements Locatable, Loggable {
 		logger.addAttribute("endline", Integer.toString(endLine));
 		logger.addAttribute("endcolumn", Integer.toString(endColumn));
 		logger.endElement();
+	}
+
+	static public Location consLoc(Token arg1, Token arg2) {
+		return new Location(arg1.getLine(), arg1.getCharPositionInLine(), arg2.getLine(), arg2.getCharPositionInLine() + arg2.getText().length() - 1);
+	}
+
+	static public Location consLoc(Token arg1) {
+		return new Location(arg1.getLine(), arg1.getCharPositionInLine() + arg1.getText().length() - 1);
+	}
+
+	static public Location tokenLoc(Token arg) {
+		return new Location(arg.getLine(), arg.getCharPositionInLine());
+	}
+
+	static public Location consLoc(Token arg1, int offset) {
+		return new Location(arg1.getLine(), arg1.getCharPositionInLine() + offset);
 	}
 
 	@Override
