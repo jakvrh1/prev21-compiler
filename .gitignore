@@ -1,6 +1,6 @@
 .idea/*
 out/*
- bin/*
+bin/*
 gen/*
 
 prg/*.p21

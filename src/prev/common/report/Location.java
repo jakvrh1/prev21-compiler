@@ -2,6 +2,7 @@ package prev.common.report;
 
 import org.antlr.v4.runtime.Token;
 import prev.common.logger.*;
+import prev.data.ast.tree.AstTree;
 
 /**
  * Description of a location of a part of a source file.
@@ -107,20 +108,28 @@ public class Location implements Locatable, Loggable {
 		logger.endElement();
 	}
 
-	static public Location consLoc(Token arg1, Token arg2) {
-		return new Location(arg1.getLine(), arg1.getCharPositionInLine(), arg2.getLine(), arg2.getCharPositionInLine() + arg2.getText().length() - 1);
+	static public Location createLocation(Object arg1, Object arg2) {
+		Location loc1 = null;
+		Location loc2 = null;
+
+		if(arg1 instanceof Token)
+			loc1 = new Location(((Token) arg1).getLine(), ((Token) arg1).getCharPositionInLine());
+		else
+			loc1 = ((AstTree)arg1).location();
+
+		if(arg2 instanceof Token)
+			loc2 = new Location(((Token) arg2).getLine(), ((Token) arg2).getCharPositionInLine() + ((Token) arg2).getText().length() - 1);
+		else
+			loc2 = ((AstTree)arg2).location();
+
+		return new Location(loc1, loc2);
 	}
 
-	static public Location consLoc(Token arg1) {
-		return new Location(arg1.getLine(), arg1.getCharPositionInLine() + arg1.getText().length() - 1);
-	}
-
-	static public Location tokenLoc(Token arg) {
-		return new Location(arg.getLine(), arg.getCharPositionInLine());
-	}
-
-	static public Location consLoc(Token arg1, int offset) {
-		return new Location(arg1.getLine(), arg1.getCharPositionInLine() + offset);
+	static public Location createLocation(Object arg1) {
+		if(arg1 instanceof Token)
+			return createLocation(arg1, arg1);
+		else
+			return ((AstTree)arg1).location();
 	}
 
 	@Override

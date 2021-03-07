@@ -133,7 +133,6 @@ public class Compiler {
 				if (Compiler.cmdLineArgValue("--target-phase").equals("abstr"))
 					break;
 
-
 				break;
 			}
 
