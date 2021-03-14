@@ -85,6 +85,7 @@ type returns [AstType ast] :
              // enclosed type
              LPAREN type RPAREN
              { $ast = $type.ast; }
+             { $ast.relocate(Location.createLocation($LPAREN, $RPAREN)); }
              ;
 
 expr returns [AstExpr ast] :
@@ -123,6 +124,7 @@ expr returns [AstExpr ast] :
             // enclosed expression
             LPAREN expr RPAREN
             { $ast = $expr.ast; }
+            { $ast.relocate(Location.createLocation($LPAREN, $RPAREN)); }
             |
 
             // postfix expression : array
