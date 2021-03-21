@@ -141,6 +141,10 @@ public class Compiler {
 					Abstr.tree.accept(nr, NameResolver.Mode.FIRST);
 					Abstr.tree.accept(nr, NameResolver.Mode.SECOND);
 
+					Abstr.tree.accept(new TypeResolver(), null);
+					Abstr.tree.accept(new AddrResolver(), null);
+
+
 					AbsLogger logger = new AbsLogger(seman.logger);
 					logger.addSubvisitor(new SemLogger(seman.logger));
 					Abstr.tree.accept(logger, "Decls");
