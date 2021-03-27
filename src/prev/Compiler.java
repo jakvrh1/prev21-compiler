@@ -141,7 +141,9 @@ public class Compiler {
 					Abstr.tree.accept(nr, NameResolver.Mode.FIRST);
 					Abstr.tree.accept(nr, NameResolver.Mode.SECOND);
 
-					Abstr.tree.accept(new TypeResolver(), null);
+					Abstr.tree.accept(new TypeResolver(), TypeResolver.Mode.FIRST);
+					Abstr.tree.accept(new TypeResolver(), TypeResolver.Mode.SECOND);
+
 					Abstr.tree.accept(new AddrResolver(), null);
 
 

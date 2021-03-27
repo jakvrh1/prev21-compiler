@@ -52,6 +52,9 @@ public class NameResolver extends AstFullVisitor<Object, NameResolver.Mode> {
 			} catch (SymbTable.CannotInsNameException e) {
 			    throw new Report.Error(funDecl, "semantic error: redeclaration of function -> " + funDecl.name);
 			}
+
+			funDecl.type.accept(this, Mode.FIRST);
+			funDecl.type.accept(this, Mode.SECOND);
 		}
 
 	    if(mode == Mode.SECOND) {
@@ -80,7 +83,8 @@ public class NameResolver extends AstFullVisitor<Object, NameResolver.Mode> {
 			} catch (SymbTable.CannotInsNameException e) {
 				throw new Report.Error(parDecl, "semantic error: redeclaration of function parameter -> " + parDecl.name);
 			}
-
+		} else if(mode == Mode.SECOND) {
+			super.visit(parDecl, mode);
 		}
 		//super.visit(parDecl, mode);
 		return null;
@@ -131,6 +135,7 @@ public class NameResolver extends AstFullVisitor<Object, NameResolver.Mode> {
 			} catch (SymbTable.CannotFndNameException e) {
 				throw new Report.Error(callExpr, "semantic error: cannot find name -> " + callExpr.name);
 			}
+			super.visit(callExpr, mode);
 		}
 	    //super.visit(callExpr, mode);
 	    return null;
