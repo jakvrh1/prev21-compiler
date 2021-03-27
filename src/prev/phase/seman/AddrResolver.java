@@ -1,5 +1,6 @@
 package prev.phase.seman;
 
+import prev.common.report.Report;
 import prev.data.ast.tree.decl.AstDecl;
 import prev.data.ast.tree.decl.AstParDecl;
 import prev.data.ast.tree.decl.AstVarDecl;
@@ -15,6 +16,7 @@ import prev.data.typ.SemType;
  * the information in {@link SemAn#isAddr}.
  */
 public class AddrResolver extends AstFullVisitor<Object, Object> {
+
     @Override
     public Object visit(AstNameExpr nameExpr, Object o) {
         super.visit(nameExpr, o);
@@ -44,8 +46,11 @@ public class AddrResolver extends AstFullVisitor<Object, Object> {
     public Object visit(AstArrExpr arrExpr, Object o) {
         super.visit(arrExpr, o);
 
-        boolean a = SemAn.isAddr.get(arrExpr.arr);
-        SemAn.isAddr.put(arrExpr, a);
+        Boolean a = SemAn.isAddr.get(arrExpr.arr);
+        if(a == null)
+            throw new Report.Error(arrExpr, "Addr error: isAddr returned null.");
+        else
+            SemAn.isAddr.put(arrExpr, a);
 
         return null;
     }
@@ -54,8 +59,11 @@ public class AddrResolver extends AstFullVisitor<Object, Object> {
     public Object visit(AstRecExpr recExpr, Object o) {
         super.visit(recExpr, o);
 
-        boolean a = SemAn.isAddr.get(recExpr.rec);
-        SemAn.isAddr.put(recExpr, a);
+        Boolean a = SemAn.isAddr.get(recExpr.rec);
+        if(a == null)
+            throw new Report.Error(recExpr, "Addr error: isAddr returned null.");
+        else
+            SemAn.isAddr.put(recExpr, a);
         return null;
     }
 }
