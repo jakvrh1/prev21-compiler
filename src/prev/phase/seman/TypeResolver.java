@@ -8,6 +8,7 @@ import prev.data.ast.tree.type.*;
 import prev.data.ast.visitor.AstFullVisitor;
 import prev.data.typ.*;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -21,7 +22,7 @@ import java.util.Set;
 
 public class TypeResolver extends AstFullVisitor<SemType, TypeResolver.Mode> {
 
-    public Set<Object> path = new HashSet<>();
+    private HashMap<SemRec, SymbTable> declaresComp = new HashMap<>();
 
     public boolean isIntCharPtr(SemType type) {
         if(type == null) return false;
@@ -39,7 +40,7 @@ public class TypeResolver extends AstFullVisitor<SemType, TypeResolver.Mode> {
 
     public boolean areTwoTypesSame(SemType type1, SemType type2) {
         if (type1 == null || type2 == null) return false;
-        //else if (type1.actualType() instanceof SemName && type2.actualType() instanceof SemName) return true;
+        else if (type1 == type2) return true;
         else if (type1.actualType() instanceof SemVoid && type2.actualType() instanceof SemVoid) return true;
         else if (type1.actualType() instanceof SemBool && type2.actualType() instanceof SemBool) return true;
         else if (type1.actualType() instanceof SemChar && type2.actualType() instanceof SemChar) return true;
@@ -48,7 +49,7 @@ public class TypeResolver extends AstFullVisitor<SemType, TypeResolver.Mode> {
             return true;
         else if (type1.actualType() instanceof SemArr && type2.actualType() instanceof SemArr && areTwoTypesSame(((SemArr) type1.actualType()).elemType, ((SemArr) type2.actualType()).elemType))
             return true;
-        else if (type1.actualType() instanceof SemRec && type2.actualType() instanceof SemRec && ((SemRec) type1).numComps() == ((SemRec) type2).numComps()) {
+        else if (type1.actualType() instanceof SemRec && type2.actualType() instanceof SemRec && ((SemRec) type1.actualType()).numComps() == ((SemRec) type2.actualType()).numComps()) {
             boolean t = true;
 
             for (int i = 0; i < ((SemRec) type1.actualType()).numComps(); i++) {
@@ -134,13 +135,20 @@ public class TypeResolver extends AstFullVisitor<SemType, TypeResolver.Mode> {
 
         if (mode == Mode.SECOND) {
             LinkedList<SemType> recs = new LinkedList<>();
+            SymbTable st = new SymbTable();
             for (AstCompDecl acd : recType.comps) {
                 SemType compType = SemAn.isType.get(acd.type);
+                try {
+                    st.ins(acd.name, acd);
+                } catch (SymbTable.CannotInsNameException e) {
+                    throw new Report.Error(recType, "Name error: " + acd.name + ".");
+                }
                 recs.add(compType);
             }
 
-            SemType returnType = new SemRec(recs);
+            SemRec returnType = new SemRec(recs);
             SemAn.isType.put(recType, returnType);
+            declaresComp.put(returnType, st);
             return returnType;
         }
 
@@ -388,10 +396,30 @@ public class TypeResolver extends AstFullVisitor<SemType, TypeResolver.Mode> {
     //v11
     @Override
     public SemType visit(AstRecExpr recExpr, TypeResolver.Mode mode) {
-        super.visit(recExpr, mode);
+        recExpr.rec.accept(this, mode);
         if (mode != Mode.THIRD) return null;
 
         SemType exprType = SemAn.ofType.get(recExpr.rec);
+        exprType = exprType.actualType();
+
+        if(exprType instanceof SemRec) {
+            SymbTable st = declaresComp.get(exprType);
+
+            try {
+                AstDecl ad = st.fnd(recExpr.comp.name);
+                if(ad instanceof AstCompDecl) {
+                    SemType type = SemAn.isType.get(((AstCompDecl) ad).type);
+                    SemAn.ofType.put(recExpr, type);
+                } else {
+                    throw new Report.InternalError();
+                }
+            } catch (SymbTable.CannotFndNameException e) {
+                e.printStackTrace();
+            }
+        } else {
+            throw new Report.InternalError();
+        }
+
         return exprType;
     }
 

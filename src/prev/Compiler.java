@@ -142,11 +142,13 @@ public class Compiler {
 					Abstr.tree.accept(nr, NameResolver.Mode.SECOND);
 
 					try {
-						Abstr.tree.accept(new TypeResolver(), TypeResolver.Mode.FIRST);
-						Abstr.tree.accept(new TypeResolver(), TypeResolver.Mode.SECOND);
-						Abstr.tree.accept(new TypeResolver(), TypeResolver.Mode.THIRD);
-						Abstr.tree.accept(new TypeResolver(), TypeResolver.Mode.VALIDATION);
+						TypeResolver tr = new TypeResolver();
+						Abstr.tree.accept(tr, TypeResolver.Mode.FIRST);
+						Abstr.tree.accept(tr, TypeResolver.Mode.SECOND);
+						Abstr.tree.accept(tr, TypeResolver.Mode.THIRD);
+						Abstr.tree.accept(tr, TypeResolver.Mode.VALIDATION);
 					} catch (StackOverflowError e) {
+						//e.printStackTrace();
 					    throw new Report.Error("StackOverFlow, possibly found cycle.");
 					}
 

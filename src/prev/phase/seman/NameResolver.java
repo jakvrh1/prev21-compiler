@@ -7,6 +7,7 @@ import prev.data.ast.tree.decl.AstTypeDecl;
 import prev.data.ast.tree.decl.AstVarDecl;
 import prev.data.ast.tree.expr.AstCallExpr;
 import prev.data.ast.tree.expr.AstNameExpr;
+import prev.data.ast.tree.expr.AstRecExpr;
 import prev.data.ast.tree.expr.AstWhereExpr;
 import prev.data.ast.tree.type.AstNameType;
 import prev.data.ast.visitor.AstFullVisitor;
@@ -71,6 +72,12 @@ public class NameResolver extends AstFullVisitor<Object, NameResolver.Mode> {
 
             symbTable.oldScope();
         }
+        return null;
+    }
+
+    @Override
+    public Object visit(AstRecExpr recExpr, Mode mode) {
+        recExpr.rec.accept(this, mode);
         return null;
     }
 
