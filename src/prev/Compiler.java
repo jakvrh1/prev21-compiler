@@ -152,7 +152,8 @@ public class Compiler {
 					    throw new Report.Error("StackOverFlow, possibly found cycle.");
 					}
 
-					Abstr.tree.accept(new AddrResolver(), null);
+					Abstr.tree.accept(new AddrResolver(), AddrResolver.Mode.FIRST);
+					Abstr.tree.accept(new AddrResolver(), AddrResolver.Mode.SECOND);
 
 					AbsLogger logger = new AbsLogger(seman.logger);
 					logger.addSubvisitor(new SemLogger(seman.logger));
