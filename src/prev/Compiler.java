@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.*;
 
 import prev.common.report.*;
 import prev.phase.lexan.*;
+import prev.phase.memory.*;
 import prev.phase.synan.*;
 import prev.phase.abstr.*;
 import prev.phase.seman.*;
@@ -19,7 +20,7 @@ public class Compiler {
 	// COMMAND LINE ARGUMENTS
 
 	/** All valid phases of the compiler. */
-	private static final String phases = "none|lexan|synan|abstr|seman";
+	private static final String phases = "none|lexan|synan|abstr|seman|memory";
 
 	/** Values of command line arguments. */
 	private static HashMap<String, String> cmdLine = new HashMap<String, String>();
@@ -148,7 +149,6 @@ public class Compiler {
 						Abstr.tree.accept(tr, TypeResolver.Mode.THIRD);
 						Abstr.tree.accept(tr, TypeResolver.Mode.VALIDATION);
 					} catch (StackOverflowError e) {
-						//e.printStackTrace();
 					    throw new Report.Error("StackOverFlow, possibly found cycle.");
 					}
 
@@ -160,6 +160,20 @@ public class Compiler {
 					Abstr.tree.accept(logger, "Decls");
 				}
 				if (Compiler.cmdLineArgValue("--target-phase").equals("seman"))
+					break;
+
+				// Memory layout.
+				try (Memory memory = new Memory()) {
+					MemEvaluator me = new MemEvaluator();
+					Abstr.tree.accept(me, MemEvaluator.Mode.FIRST);
+					Abstr.tree.accept(me, MemEvaluator.Mode.GLOBAL_VARIABLES);
+
+					AbsLogger logger = new AbsLogger(memory.logger);
+					logger.addSubvisitor(new SemLogger(memory.logger));
+					logger.addSubvisitor(new MemLogger(memory.logger));
+					Abstr.tree.accept(logger, "Decls");
+				}
+				if (Compiler.cmdLineArgValue("--target-phase").equals("memory"))
 					break;
 
 				break;
