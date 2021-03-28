@@ -141,11 +141,16 @@ public class Compiler {
 					Abstr.tree.accept(nr, NameResolver.Mode.FIRST);
 					Abstr.tree.accept(nr, NameResolver.Mode.SECOND);
 
-					Abstr.tree.accept(new TypeResolver(), TypeResolver.Mode.FIRST);
-					Abstr.tree.accept(new TypeResolver(), TypeResolver.Mode.SECOND);
+					try {
+						Abstr.tree.accept(new TypeResolver(), TypeResolver.Mode.FIRST);
+						Abstr.tree.accept(new TypeResolver(), TypeResolver.Mode.SECOND);
+						Abstr.tree.accept(new TypeResolver(), TypeResolver.Mode.THIRD);
+						Abstr.tree.accept(new TypeResolver(), TypeResolver.Mode.VALIDATION);
+					} catch (StackOverflowError e) {
+					    throw new Report.Error("StackOverFlow, possibly found cycle.");
+					}
 
 					Abstr.tree.accept(new AddrResolver(), null);
-
 
 					AbsLogger logger = new AbsLogger(seman.logger);
 					logger.addSubvisitor(new SemLogger(seman.logger));
