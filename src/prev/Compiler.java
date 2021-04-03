@@ -6,6 +6,7 @@ import java.util.jar.Attributes;
 import org.antlr.v4.runtime.*;
 
 import prev.common.report.*;
+import prev.phase.imcgen.*;
 import prev.phase.lexan.*;
 import prev.phase.memory.*;
 import prev.phase.synan.*;
@@ -20,7 +21,7 @@ public class Compiler {
 	// COMMAND LINE ARGUMENTS
 
 	/** All valid phases of the compiler. */
-	private static final String phases = "none|lexan|synan|abstr|seman|memory";
+	private static final String phases = "none|lexan|synan|abstr|seman|memory|imcgen";
 
 	/** Values of command line arguments. */
 	private static HashMap<String, String> cmdLine = new HashMap<String, String>();
@@ -174,6 +175,18 @@ public class Compiler {
 					Abstr.tree.accept(logger, "Decls");
 				}
 				if (Compiler.cmdLineArgValue("--target-phase").equals("memory"))
+					break;
+
+				// Intermediate code generation.
+				try (ImcGen imcgen = new ImcGen()) {
+					Abstr.tree.accept(new CodeGenerator(), null);
+					AbsLogger logger = new AbsLogger(imcgen.logger);
+					logger.addSubvisitor(new SemLogger(imcgen.logger));
+					logger.addSubvisitor(new MemLogger(imcgen.logger));
+					logger.addSubvisitor(new ImcLogger(imcgen.logger));
+					Abstr.tree.accept(logger, "Decls");
+				}
+				if (Compiler.cmdLineArgValue("--target-phase").equals("imcgen"))
 					break;
 
 				break;
