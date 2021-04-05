@@ -12,7 +12,7 @@ import prev.data.imc.visitor.*;
 public class ImcUNOP extends ImcExpr {
 
 	public enum Oper {
-		NOT, NEG,
+		NOT, ADD, SUB
 	}
 
 	/** The operator. */

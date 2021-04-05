@@ -410,6 +410,7 @@ public class TypeResolver extends AstFullVisitor<SemType, TypeResolver.Mode> {
                 if(ad instanceof AstCompDecl) {
                     SemType type = SemAn.isType.get(((AstCompDecl) ad).type);
                     SemAn.ofType.put(recExpr, type);
+                    SemAn.declaredAt.put(recExpr.comp, ad);
                 } else {
                     throw new Report.InternalError();
                 }

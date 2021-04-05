@@ -6,6 +6,7 @@ import java.util.jar.Attributes;
 import org.antlr.v4.runtime.*;
 
 import prev.common.report.*;
+import prev.data.mem.MemFrame;
 import prev.phase.imcgen.*;
 import prev.phase.lexan.*;
 import prev.phase.memory.*;
@@ -179,7 +180,7 @@ public class Compiler {
 
 				// Intermediate code generation.
 				try (ImcGen imcgen = new ImcGen()) {
-					Abstr.tree.accept(new CodeGenerator(), null);
+					Abstr.tree.accept(new CodeGenerator(), new Stack<MemFrame>());
 					AbsLogger logger = new AbsLogger(imcgen.logger);
 					logger.addSubvisitor(new SemLogger(imcgen.logger));
 					logger.addSubvisitor(new MemLogger(imcgen.logger));
