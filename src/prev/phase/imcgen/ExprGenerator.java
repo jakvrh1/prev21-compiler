@@ -3,12 +3,13 @@ package prev.phase.imcgen;
 import prev.common.report.Report;
 import prev.data.ast.tree.decl.*;
 import prev.data.ast.tree.expr.*;
+import prev.data.ast.tree.stmt.AstExprStmt;
+import prev.data.ast.tree.stmt.AstStmt;
 import prev.data.ast.visitor.AstVisitor;
 import prev.data.imc.code.expr.*;
-import prev.data.mem.MemAbsAccess;
-import prev.data.mem.MemAccess;
-import prev.data.mem.MemFrame;
-import prev.data.mem.MemRelAccess;
+import prev.data.imc.code.stmt.ImcSTMTS;
+import prev.data.imc.code.stmt.ImcStmt;
+import prev.data.mem.*;
 import prev.data.typ.SemChar;
 import prev.data.typ.SemType;
 import prev.phase.memory.Memory;
@@ -53,6 +54,10 @@ public class ExprGenerator implements AstVisitor<ImcExpr, Stack<MemFrame>> {
     // EX4
     @Override
     public ImcExpr visit(AstPfxExpr pfxExpr, Stack<MemFrame> memFrames) {
+        ImcExpr e = ImcGen.exprImc.get(pfxExpr.expr);
+        Vector<Long> offs = new Vector<>();
+        Vector<ImcExpr> args = new Vector<>();
+
         ImcUNOP.Oper oper = null;
         switch (pfxExpr.oper) {
             case NOT:
@@ -66,19 +71,25 @@ public class ExprGenerator implements AstVisitor<ImcExpr, Stack<MemFrame>> {
                 break;
                 // EX6 levi
             case PTR:
-                ImcExpr ie = ImcGen.exprImc.get(pfxExpr.expr);
-                if(ie instanceof ImcMEM)
-                   ImcGen.exprImc.put(pfxExpr, ((ImcMEM) ie).addr);
+                if(e instanceof ImcMEM)
+                   ImcGen.exprImc.put(pfxExpr, ((ImcMEM) e).addr);
                 return null;
                 // EX7
             case NEW:
+                // EX8
             case DEL:
+                MemLabel newL = new MemLabel();
+                offs.add(0L);
+                offs.add(8L);
+                args.add(e);
+                ImcGen.exprImc.put(pfxExpr, new ImcCALL(newL, offs, args));
+                return null;
 
+            //new ImcCALL(delL, offs, args);
             default:
                 return null;
         }
 
-        ImcExpr e = ImcGen.exprImc.get(pfxExpr.expr);
         ImcGen.exprImc.put(pfxExpr, new ImcUNOP(oper, e));
         return null;
     }
@@ -144,6 +155,8 @@ public class ExprGenerator implements AstVisitor<ImcExpr, Stack<MemFrame>> {
         ImcGen.exprImc.put(sfxExpr, new ImcMEM(ie));
         return null;
     }
+
+
 
     // EX9
     @Override
@@ -229,12 +242,40 @@ public class ExprGenerator implements AstVisitor<ImcExpr, Stack<MemFrame>> {
                 offs.add(type.size() + offs.lastElement());
                 args.add(ImcGen.exprImc.get(arg));
             }
+            /*
+            if(mf == null) {
+                ImcGen.exprImc.put(callExpr, new ImcCALL(new MemLabel(((AstFunDecl) ad).name), offs, args));
+            } else {
+            */
+
+                ImcGen.exprImc.put(callExpr, new ImcCALL(mf.label, offs, args));
+            //}
 
         }
         return null;
     }
 
     // EX13
+    @Override
+    public ImcExpr visit(AstStmtExpr stmtExpr, Stack<MemFrame> memFrames) {
+        Vector<ImcStmt> stmts = new Vector<>();
+
+        for(int i = 0; i < stmtExpr.stmts.size() - 1; ++i)
+            stmts.add(ImcGen.stmtImc.get(stmtExpr.stmts.get(i)));
+
+        AstStmt st = stmtExpr.stmts.get(stmtExpr.stmts.size() - 1);
+
+        if(st instanceof AstExprStmt) {
+            ImcSEXPR sexpr = new ImcSEXPR(new ImcSTMTS(stmts), ImcGen.exprImc.get(((AstExprStmt) st).expr));
+            ImcGen.exprImc.put(stmtExpr, sexpr);
+        } else {
+            stmts.add(ImcGen.stmtImc.get(stmtExpr.stmts.get(stmtExpr.stmts.size() - 1)));
+            ImcSEXPR sexpr = new ImcSEXPR(new ImcSTMTS(stmts), new ImcCONST(0L));
+            ImcGen.exprImc.put(stmtExpr, sexpr);
+        }
+        return null;
+    }
+
 
     // EX14
 
@@ -258,4 +299,5 @@ public class ExprGenerator implements AstVisitor<ImcExpr, Stack<MemFrame>> {
         ImcGen.exprImc.put(whereExpr, ie);
         return null;
     }
+
 }

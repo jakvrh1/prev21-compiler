@@ -31,7 +31,7 @@ public class MemEvaluator extends AstFullVisitor<Object, MemEvaluator.Mode> {
     public Object visit(AstFunDecl funDecl, Mode mode) {
         //Report.info(funDecl, funDecl.name + " " +  depth);
         if (mode != Mode.FIRST) return null;
-        if (funDecl.expr == null) return null;
+        //if (funDecl.expr == null) return null;
         if (visitedFuns.contains(funDecl)) return null;
         //Report.info(funDecl, funDecl.name + " " + depth);
 
@@ -41,7 +41,8 @@ public class MemEvaluator extends AstFullVisitor<Object, MemEvaluator.Mode> {
         list.add(new FunVars());
         ++depth;
 
-        funDecl.expr.accept(this, Mode.FUNCTION_SEEKING);
+        if(funDecl.expr != null)
+            funDecl.expr.accept(this, Mode.FUNCTION_SEEKING);
         funDecl.pars.accept(this, Mode.FUNCTION_SEEKING);
 
         MemLabel ml;
