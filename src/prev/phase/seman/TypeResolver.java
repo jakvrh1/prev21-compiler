@@ -224,6 +224,7 @@ public class TypeResolver extends AstFullVisitor<SemType, TypeResolver.Mode> {
                     returnType = new SemVoid();
                 else
                     throw new Report.Error(pfxExpr, "Type error: del operator can only be used with pointers");
+                break;
             default:
                 throw new Report.Error(pfxExpr, "Unexpected prefix operator " + pfxExpr.oper);
         }
