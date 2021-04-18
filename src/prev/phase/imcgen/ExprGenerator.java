@@ -46,7 +46,7 @@ public class ExprGenerator implements AstVisitor<ImcExpr, Stack<MemFrame>> {
             case STRING:
                 MemAbsAccess maa = Memory.strings.get(atomExpr);
                 ImcGen.exprImc.put(atomExpr, new ImcNAME(maa.label));
-                break;
+                return null;
             default:
                 return null;
         }

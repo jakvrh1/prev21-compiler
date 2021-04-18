@@ -13,7 +13,7 @@ import prev.data.lin.*;
  */
 public class Interpreter {
 
-	private boolean debug = false;
+	private boolean debug = true;
 
 	private Random random;
 
