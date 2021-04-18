@@ -3,7 +3,6 @@ package prev.phase.imclin;
 import prev.common.report.Report;
 import prev.data.imc.code.expr.*;
 import prev.data.imc.code.stmt.*;
-import prev.data.mem.MemFrame;
 import prev.data.mem.MemTemp;
 
 import java.util.Vector;
@@ -34,18 +33,18 @@ public class Cannonical {
     public void can(ImcStmt s, Vector<ImcStmt> v) {
         if(s instanceof ImcCJUMP)
             cjumpStmt((ImcCJUMP) s, v);
-        if(s instanceof ImcESTMT)
+        else if(s instanceof ImcESTMT)
             eStmt((ImcESTMT) s, v);
-        if(s instanceof ImcJUMP)
+        else if(s instanceof ImcJUMP)
             jumpStmt((ImcJUMP) s, v);
-        if(s instanceof ImcLABEL)
+        else if(s instanceof ImcLABEL)
             labelStmt((ImcLABEL) s, v);
-        if(s instanceof ImcMOVE)
+        else if(s instanceof ImcMOVE)
             moveStmt((ImcMOVE) s, v);
-        if(s instanceof ImcSTMTS)
+        else if(s instanceof ImcSTMTS)
             vecStmts((ImcSTMTS) s, v);
-
-        throw new Report.InternalError();
+        else
+            throw new Report.InternalError();
     }
 
     public ImcExpr binExpr(ImcBINOP binop, Vector<ImcStmt> v) {
@@ -129,6 +128,7 @@ public class Cannonical {
     }
 
     public void vecStmts(ImcSTMTS stmt, Vector<ImcStmt> v) {
-        v.add(stmt);
+        for(ImcStmt s : stmt.stmts)
+            can(s, v);
     }
 }

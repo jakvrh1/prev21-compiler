@@ -50,7 +50,11 @@ public class ChunkGenerator extends AstFullVisitor<Object, Object> {
         Vector<ImcStmt> body = new Vector<>();
 
         body.add(new ImcLABEL(entry));
-        body.addAll(cExpr(root, frame));
+        Vector<ImcStmt> vecStmts = new Vector<>();
+        Cannonical can = new Cannonical();
+        ImcExpr e = can.can(root, vecStmts);
+        body.addAll(vecStmts);
+        body.add(new ImcMOVE(new ImcTEMP(frame.RV), e));
         body.add(new ImcJUMP(exit));
 
         ImcLin.addCodeChunk(new LinCodeChunk(frame, body, entry, exit));
@@ -58,65 +62,5 @@ public class ChunkGenerator extends AstFullVisitor<Object, Object> {
         return null;
     }
 
-
-    private Vector<ImcStmt> cExpr(ImcExpr expr, MemFrame fr) {
-        Vector<ImcStmt> stmts = new Vector<>();
-        if(expr instanceof ImcSEXPR) {
-            ImcSEXPR sexpr = (ImcSEXPR) expr;
-            stmts.addAll(cStmt(sexpr.stmt, fr));
-            stmts.addAll(cExpr(sexpr.expr, fr));
-        } else if(expr instanceof ImcCALL) {
-            ImcCALL callExpr = (ImcCALL) expr;
-            stmts.addAll(cCall(callExpr, fr));
-        } else {
-            stmts.add(new ImcMOVE(new ImcTEMP(fr.RV), expr));
-        }
-        return stmts;
-    }
-
-    private Vector<ImcStmt> cCall(ImcCALL call, MemFrame fr) {
-        Vector<ImcStmt> callStmts = new Vector<>();
-        Vector<ImcExpr> args = new Vector<>();
-
-        for(ImcExpr arg : call.args) {
-            if(arg instanceof ImcCALL) {
-                Vector<ImcStmt> sCall = cCall((ImcCALL) arg, fr);
-                callStmts.addAll(sCall);
-                ImcStmt res = sCall.lastElement();
-                if(res instanceof ImcMOVE) {
-                    ImcExpr e = ((ImcMOVE) res).dst;
-                    if(e instanceof ImcTEMP) {
-                        args.add(e);
-                    }
-                }
-            } else {
-                ImcTEMP t = new ImcTEMP(new MemTemp());
-                ImcMOVE m = new ImcMOVE(t, arg);
-                callStmts.add(m);
-                args.add(t);
-            }
-        }
-
-        ImcTEMP t = new ImcTEMP(new MemTemp());
-        ImcCALL c = new ImcCALL(call.label, call.offs, args);
-
-        callStmts.add(new ImcMOVE(t, c));
-        return callStmts;
-    }
-
-    private Vector<ImcStmt> cStmt(ImcStmt stmt, MemFrame fr) {
-        Vector<ImcStmt> stmts = new Vector<>();
-        if(stmt instanceof ImcSTMTS) {
-            for(int i = 0; i < ((ImcSTMTS) stmt).stmts.size(); ++i) {
-                stmts.addAll(cStmt(((ImcSTMTS) stmt).stmts.get(i), fr));
-            }
-        } else if(stmt instanceof ImcESTMT) {
-            ImcExpr e = ((ImcESTMT) stmt).expr;
-            stmts.addAll(cExpr(e, fr));
-        } else {
-            stmts.add(stmt);
-        }
-        return stmts;
-    }
 }
 
