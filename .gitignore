@@ -3,6 +3,7 @@ out/*
 bin/*
 gen/*
 
+prg/old_tests/*.p21
 prg/*.p21
 
 *.class
