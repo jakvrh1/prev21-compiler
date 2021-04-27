@@ -15,17 +15,35 @@ public class StmtGenerator implements ImcVisitor<Vector<AsmInstr>, Object> {
 
     @Override
     public Vector<AsmInstr> visit(ImcCJUMP cjump, Object visArg) {
-        return null;
+        Vector<AsmInstr> instr = new Vector<>();
+        Vector<MemTemp> uses = new Vector<>();
+        Vector<MemLabel> jumps = new Vector<>();
+        String INSTR_NAME = "BP `s0, " + cjump.posLabel.name;
+
+        MemTemp mt = cjump.cond.accept(new ExprGenerator(), instr);
+        uses.add(mt);
+        jumps.add(cjump.posLabel);
+
+        instr.add(new AsmOPER(INSTR_NAME, uses, null, jumps));
+
+        return instr;
     }
 
     @Override
     public Vector<AsmInstr> visit(ImcESTMT eStmt, Object visArg) {
-        return null;
+        Vector<AsmInstr> instr = new Vector<>();
+        eStmt.expr.accept(new ExprGenerator(), instr);
+        return instr;
     }
 
     @Override
     public Vector<AsmInstr> visit(ImcJUMP jump, Object visArg) {
-        return null;
+        Vector<AsmInstr> instr = new Vector<>();
+        Vector<MemLabel> jumps = new Vector<>();
+        String INSTR_NAME = "JMP " + jump.label.name;
+        jumps.add(jump.label);
+        instr.add(new AsmOPER(INSTR_NAME, null, null, jumps));
+        return instr;
     }
 
     @Override
@@ -38,19 +56,23 @@ public class StmtGenerator implements ImcVisitor<Vector<AsmInstr>, Object> {
     @Override
     public Vector<AsmInstr> visit(ImcMOVE move, Object visArg) {
         Vector<AsmInstr> instr = new Vector<>();
-        String INSTR_NAME = "SET";
+        Vector<MemTemp> uses = new Vector<>();
+        Vector<MemTemp> defs = new Vector<>();
 
-        Vector<MemTemp> uses = new Vector<MemTemp>();
-        if(move.src instanceof ImcTEMP)
-            uses.add(((ImcTEMP) move.src).temp);
+        MemTemp src_mt = move.src.accept(new ExprGenerator(), instr);
+        MemTemp dst_mt = move.dst.accept(new ExprGenerator(), instr);
 
-        Vector<MemTemp> defs = new Vector<MemTemp>();
-        if(move.dst instanceof ImcTEMP)
-            defs.add(((ImcTEMP) move.dst).temp);
+        uses.add(src_mt);
+        defs.add(dst_mt);
 
-        AsmMOVE ai = new AsmMOVE(INSTR_NAME, uses, defs);
+        if(move.dst instanceof ImcTEMP) {
+            String INSTR_NAME = "SET `d0, `s0";
+            instr.add(new AsmMOVE(INSTR_NAME, uses, defs));
+        } else {
+            String INSTR_NAME = "STO `d0, ˙s0, 0";
+            instr.add(new AsmMOVE(INSTR_NAME, uses, defs));
+        }
 
-        instr.add(ai);
         return instr;
     }
 
