@@ -24,7 +24,7 @@ public class Compiler {
 	// COMMAND LINE ARGUMENTS
 
 	/** All valid phases of the compiler. */
-	private static final String phases = "none|lexan|synan|abstr|seman|memory|imcgen|imclin|acmgen";
+	private static final String phases = "none|lexan|synan|abstr|seman|memory|imcgen|imclin|amsgen";
 
 	/** Values of command line arguments. */
 	private static HashMap<String, String> cmdLine = new HashMap<String, String>();
@@ -205,10 +205,10 @@ public class Compiler {
 
 				// Machine code generation.
 				try (AsmGen asmgen = new AsmGen()) {
-					//asmgen.genAsmCodes();
-					//asmgen.log();
+					asmgen.genAsmCodes();
+					asmgen.log();
 				}
-				if (Compiler.cmdLineArgValue("--target-phase").equals("acmgen"))
+				if (Compiler.cmdLineArgValue("--target-phase").equals("amsgen"))
 					break;
 
 				break;
