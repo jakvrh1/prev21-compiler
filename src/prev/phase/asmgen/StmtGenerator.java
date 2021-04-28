@@ -80,4 +80,5 @@ public class StmtGenerator implements ImcVisitor<Vector<AsmInstr>, Object> {
     public Vector<AsmInstr> visit(ImcSTMTS stmts, Object visArg) {
         return null;
     }
+
 }

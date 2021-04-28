@@ -3,6 +3,7 @@ package prev.phase.asmgen;
 import prev.common.report.Report;
 import prev.data.asm.AsmInstr;
 import prev.data.asm.AsmMOVE;
+import prev.data.asm.AsmOPER;
 import prev.data.imc.code.expr.*;
 import prev.data.imc.visitor.ImcVisitor;
 import prev.data.mem.MemTemp;
@@ -23,79 +24,59 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
         instr.add("`d0");
         instr.add("`s0");
         instr.add("`s1");
-        defs.add(new MemTemp());
 
-        if (binOp.oper == ImcBINOP.Oper.LTH ||
-                binOp.oper == ImcBINOP.Oper.GTH ||
-                binOp.oper == ImcBINOP.Oper.LEQ ||
-                binOp.oper == ImcBINOP.Oper.GEQ ||
-                binOp.oper == ImcBINOP.Oper.MOD) {
-            switch (binOp.oper) {
-                case LTH:
-                    instr.set(0, "SUB");
-                    addInstruction(instr, binOp, visArg, uses, defs);
-                    MemTemp s_mt = defs.lastElement();
+        if(binOp.oper == ImcBINOP.Oper.LTH) {
+            instr.set(0, "SUB");
+            MemTemp sub_mt = addInstruction(instr, binOp, visArg, uses, defs);
 
-                    uses = new Vector<>();
-                    defs = new Vector<>();
+            uses.add(sub_mt);
+            uses.add(createConstant(-1, visArg));
+            defs.add(new MemTemp());
 
-                    uses.add(s_mt);
-                    defs.add(new MemTemp());
+            visArg.add(new AsmOPER("MUL `d0, `s0, `s1", uses, defs, null));
+            return defs.lastElement();
+        } else if(binOp.oper == ImcBINOP.Oper.GTH) {
+            instr.set(0, "SUB");
+            return addInstruction(instr, binOp, visArg, uses, defs);
+        } else if(binOp.oper == ImcBINOP.Oper.LEQ) {
+            instr.set(0, "SUB");
+            MemTemp sub_mt = addInstruction(instr, binOp, visArg, uses, defs);
 
-                    visArg.add(new AsmMOVE("MUL `d0, `s0, -1", uses, defs));
-                    return defs.lastElement();
-                case GTH:
-                    instr.set(0, "SUB");
-                    addInstruction(instr, binOp, visArg, uses, defs);
-                    return defs.lastElement();
-                case LEQ:
-                    instr.set(0, "SUB");
-                    addInstruction(instr, binOp, visArg, uses, defs);
-                    MemTemp s1_mt = defs.lastElement();
+            uses.add(sub_mt);
+            defs.add(new MemTemp());
 
-                    uses = new Vector<>();
-                    defs = new Vector<>();
+            visArg.add(new AsmOPER("CMP `d0, `s0, 1", uses, defs, null));
+            MemTemp cmp_mt = defs.lastElement();
 
-                    uses.add(s1_mt);
-                    defs.add(new MemTemp());
+            uses = new Vector<>();
+            defs = new Vector<>();
 
-                    visArg.add(new AsmMOVE("CMP `d0, `s0, 1", uses, defs));
-                    MemTemp cmp1_mt = defs.lastElement();
+            uses.add(cmp_mt);
+            uses.add(createConstant(-1, visArg));
+            defs.add(new MemTemp());
 
-                    uses = new Vector<>();
-                    defs = new Vector<>();
+            visArg.add(new AsmOPER("MUL `d0, `s0, `s1", uses, defs, null));
+            return defs.lastElement();
+        } else if(binOp.oper == ImcBINOP.Oper.GEQ) {
+            instr.set(0, "SUB");
+            MemTemp cmp_mt = addInstruction(instr, binOp, visArg, uses, defs);
 
-                    uses.add(cmp1_mt);
-                    defs.add(new MemTemp());
+            uses.add(cmp_mt);
+            uses.add(createConstant(-1, visArg));
+            defs.add(new MemTemp());
 
-                    visArg.add(new AsmMOVE("MUL `d0, `s0, -1", uses, defs));
-                    return defs.lastElement();
-                case GEQ:
-                    instr.set(0, "SUB");
-                    addInstruction(instr, binOp, visArg, uses, defs);
-                    MemTemp cmp2_mt = defs.lastElement();
+            visArg.add(new AsmOPER("CMP `d0, `s0, `s1", uses, defs, null));
+            return defs.lastElement();
+        } else if(binOp.oper == ImcBINOP.Oper.MOD) {
+            instr.set(0, "DIV");
+            addInstruction(instr, binOp, visArg, uses, defs);
 
-                    uses = new Vector<>();
-                    defs = new Vector<>();
+            defs.add(new MemTemp());
+            visArg.add(new AsmOPER("GET `d0, rR", null, defs, null));
 
-                    uses.add(cmp2_mt);
-                    defs.add(new MemTemp());
-
-                    visArg.add(new AsmMOVE("CMP `d0, `s0, -1", uses, defs));
-                    return defs.lastElement();
-                case MOD:
-                    instr.set(0, "DIV");
-                    addInstruction(instr, binOp, visArg, uses, defs);
-
-                    defs = new Vector<>();
-                    defs.add(new MemTemp());
-                    visArg.add(new AsmMOVE("GET `d0, rR", null, defs));
-
-                    return defs.lastElement();
-            }
-
-
-        } else {
+            return defs.lastElement();
+        }
+         else {
             switch (binOp.oper) {
                 case OR -> instr.set(0, "OR");
                 case AND -> instr.set(0, "AND");
@@ -111,30 +92,86 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
             return defs.lastElement();
         }
 
-        throw new Report.InternalError();
     }
 
-    public void addInstruction(Vector<String> instr, ImcBINOP binOp, Vector<AsmInstr> visArg, Vector<MemTemp> uses, Vector<MemTemp> defs) {
-        if (binOp.fstExpr instanceof ImcCONST) {
-            uses.add(binOp.sndExpr.accept(this, visArg));
-            visArg.add(new AsmMOVE(instr.get(0) + " " + instr.get(1) + ", " + ((ImcCONST) binOp.fstExpr).value + ", " + instr.get(3), uses, defs));
-        } else if (binOp.sndExpr instanceof ImcCONST) {
-            uses.add(binOp.fstExpr.accept(this, visArg));
-            visArg.add(new AsmMOVE(instr.get(0) + " " + instr.get(1) + ", " + instr.get(2) + ", " + ((ImcCONST) binOp.fstExpr).value, uses, defs));
-        } else {
-            uses.add(binOp.sndExpr.accept(this, visArg));
-            uses.add(binOp.fstExpr.accept(this, visArg));
-            visArg.add(new AsmMOVE(instr.get(0) + " " + instr.get(1) + ", " + instr.get(2) + ", " + instr.get(3), uses, defs));
+    public MemTemp createConstant(long value, Vector<AsmInstr> visArg) {
+        Vector<MemTemp> defs = new Vector<>();
+        defs.add(new MemTemp());
+
+        System.out.println(value);
+        boolean isNegative = (value < 0);
+
+        if(isNegative) value *= -1;
+
+        visArg.add(new AsmOPER(String.format("SETL `d0,%d", value & 0x000000000000FFFFL), null, defs, null));
+        visArg.add(new AsmOPER(String.format("INCML `d0,%d", value & 0x00000000FFFF0000L), null, defs, null));
+        visArg.add(new AsmOPER(String.format("INCMH `d0,%d", value & 0x0000FFFF00000000L), null, defs, null));
+        visArg.add(new AsmOPER(String.format("INCH `d0,%d", value & 0xFFFF000000000000L), null, defs, null));
+
+        if(isNegative) {
+            Vector<MemTemp> uses = new Vector<>();
+            uses.add(defs.lastElement());
+            defs = new Vector<>();
+            defs.add(new MemTemp());
+
+            visArg.add(new AsmOPER("NEG `d0, `s0", uses, defs, null));
+            return defs.lastElement();
         }
+
+        return defs.lastElement();
     }
+
+    public MemTemp addInstruction(Vector<String> instr, ImcBINOP binOp, Vector<AsmInstr> visArg, Vector<MemTemp> uses, Vector<MemTemp> defs) {
+        MemTemp mt = new MemTemp();
+        defs.add(mt);
+
+        uses.add(binOp.fstExpr.accept(this, visArg));
+        //uses.add(binOp.sndExpr.accept(this, visArg));
+
+        /*
+        if (binOp.fstExpr instanceof ImcCONST)
+            uses.add(createConstant(((ImcCONST) binOp.fstExpr).value, visArg));
+        else
+            uses.add(binOp.fstExpr.accept(this, visArg));
+
+         */
+
+        if (binOp.sndExpr instanceof ImcCONST && ((ImcCONST) binOp.sndExpr).value >= 0 && ((ImcCONST) binOp.sndExpr).value <= 255) {
+            instr.set(3, ""+((ImcCONST) binOp.sndExpr).value);
+        }
+        else
+            uses.add(binOp.sndExpr.accept(this, visArg));
+
+
+        visArg.add(new AsmOPER(instr.get(0) + " " + instr.get(1) + ", " + instr.get(2) + ", " + instr.get(3), uses, defs, null));
+        uses = new Vector<>();
+        defs = new Vector<>();
+
+        return mt;
+    }
+
 
     @Override
     public MemTemp visit(ImcCALL call, Vector<AsmInstr> visArg) {
-        return null;
+        Vector<MemTemp> uses = new Vector<>();
+        MemTemp x = createConstant(call.args.size(), visArg);
+        uses.add(x);
+        visArg.add(new AsmOPER("PUSHJ `s0, " + call.label.name, uses, null, null));
+
+
+        for (ImcExpr arg : call.args) {
+            uses = new Vector<>();
+            uses.add(arg.accept(this, visArg));
+            visArg.add(new AsmOPER("STO `s0, $253", uses, null, null));
+        }
+
+        return x;
     }
 
     @Override
     public MemTemp visit(ImcMEM mem, Vector<AsmInstr> visArg) {
+        /*
+
         Vector<MemTemp> uses = new Vector<>();
         Vector<MemTemp> defs = new Vector<>();
         String instr = "LDO `d0, `s0, 0";
@@ -144,21 +181,20 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
         defs.add(new MemTemp());
 
         return defs.lastElement();
+
+         */
+
+        return mem.addr.accept(this, visArg);
     }
 
     @Override
     public MemTemp visit(ImcNAME name, Vector<AsmInstr> visArg) {
-        Vector<MemTemp> uses = new Vector<>();
         Vector<MemTemp> defs = new Vector<>();
-
-
-        return null;
+        defs.add(new MemTemp());
+        visArg.add(new AsmOPER("LDA `d0, " + name.label.name, null, defs, null));
+        return defs.lastElement();
     }
 
-    @Override
-    public MemTemp visit(ImcSEXPR sExpr, Vector<AsmInstr> visArg) {
-        return null;
-    }
 
     @Override
     public MemTemp visit(ImcTEMP temp, Vector<AsmInstr> visArg) {
@@ -187,8 +223,13 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
         MemTemp mt = unOp.subExpr.accept(this, visArg);
         uses.add(mt);
         defs.add(new MemTemp());
-        visArg.add(new AsmMOVE(instr, uses, defs));
+        visArg.add(new AsmOPER(instr, uses, defs, null));
 
         return defs.lastElement();
+    }
+
+    @Override
+    public MemTemp visit(ImcCONST constant, Vector<AsmInstr> visArg) {
+        return createConstant(constant.value, visArg);
     }
 }
