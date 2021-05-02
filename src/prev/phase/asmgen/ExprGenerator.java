@@ -148,16 +148,15 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
             uses.add(call.args.get(i).accept(this, visArg));
             visArg.add(new AsmOPER("STO `s0, $253, " + call.offs.get(i), uses, null, null));
         }
-        uses = new Vector<>();
-        MemTemp x = createConstant(call.args.size(), visArg);
-        uses.add(x);
-        visArg.add(new AsmOPER("PUSHJ `s0, " + call.label.name, uses, null, null));
+        //MemTemp x = createConstant(call.args.size(), visArg);
+        //uses.add(x);
+        //visArg.add(new AsmOPER("PUSHJ `s0, " + call.label.name, null, null, null));
+        visArg.add(new AsmOPER("PUSHJ $0, " + call.label.name, null, null, null));
 
-        uses = new Vector<>();
         Vector<MemTemp> defs = new Vector<>();
         defs.add(new MemTemp());
 
-        visArg.add(new AsmOPER("LDO `d0, `s0, 0", uses, defs, null));
+        visArg.add(new AsmOPER("LDO `d0, $253, 0", null, defs, null));
 
         return defs.lastElement();
     }

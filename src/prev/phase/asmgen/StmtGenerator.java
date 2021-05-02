@@ -26,6 +26,8 @@ public class StmtGenerator implements ImcVisitor<Vector<AsmInstr>, Object> {
         MemTemp mt = cjump.cond.accept(new ExprGenerator(), instr);
 
         uses.add(mt);
+
+        jumps.add(cjump.negLabel);
         jumps.add(cjump.posLabel);
 
         instr.add(new AsmOPER("BP `s0, " + cjump.posLabel.name, uses, null, jumps));

@@ -9,7 +9,7 @@ import prev.data.mem.*;
 public class AsmLABEL extends AsmOPER {
 
 	/** The label. */
-	private final MemLabel label;
+	public final MemLabel label;
 
 	public AsmLABEL(MemLabel label) {
 		super("", null, null, null);
