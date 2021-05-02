@@ -234,6 +234,7 @@ public class ExprGenerator implements AstVisitor<ImcExpr, Stack<MemFrame>> {
     @Override
     public ImcExpr visit(AstCallExpr callExpr, Stack<MemFrame> memFrames) {
         AstDecl ad = SemAn.declaredAt.get(callExpr);
+
         if(ad instanceof AstFunDecl) {
             MemFrame mf = Memory.frames.get((AstFunDecl) ad);
 
@@ -241,9 +242,11 @@ public class ExprGenerator implements AstVisitor<ImcExpr, Stack<MemFrame>> {
             Vector<ImcExpr> args = new Vector<>();
 
             offs.add(0L);
-            if(mf.depth == 0)
+            if(mf == memFrames.peek())
+               args.add(new ImcMEM(new ImcTEMP(memFrames.peek().FP)));
+            else if(mf.depth == 0)
                 args.add(new ImcCONST(0));
-             else
+            else
                 args.add(new ImcTEMP(memFrames.peek().FP));
 
             for(var arg: callExpr.args) {

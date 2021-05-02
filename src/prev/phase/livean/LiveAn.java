@@ -43,7 +43,7 @@ public class LiveAn extends Phase {
 					HashSet<MemTemp> newIn = ai.out();
 					HashSet<MemTemp> newOut = new HashSet<>();
 
-					newIn.removeAll(ai.defs());
+					ai.defs().forEach(newIn::remove);
 					newIn.addAll(ai.uses());
 
 					if(instr == instrs.size() - 1)
