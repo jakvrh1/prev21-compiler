@@ -19,8 +19,42 @@ public class RegAll extends Phase {
 		super("regall");
 	}
 
+	public HashMap<MemTemp, HashSet<MemTemp>> codeGraph(Code code) {
+		HashMap<MemTemp, HashSet<MemTemp>> G = new HashMap<>();
+
+		for(AsmInstr instr : code.instrs) {
+			for(MemTemp i : instr.in()) {
+				if (!G.containsKey(i))
+					G.put(i, new HashSet<>());
+				for(MemTemp j : instr.in()) {
+					G.get(i).add(j);
+				}
+			}
+			for(MemTemp i : instr.out()) {
+				if (!G.containsKey(i))
+					G.put(i, new HashSet<>());
+				for(MemTemp j : instr.out()) {
+					G.get(i).add(j);
+				}
+			}
+		}
+
+		return G;
+	}
+
 	public void allocate() {
 		// TODO
+		for(Code code : AsmGen.codes) {
+			var G = codeGraph(code);
+			for(MemTemp key : G.keySet()) {
+				System.out.print("NODE: " + key + ", EDGE: ");
+				for(MemTemp val : G.get(key)) {
+				    System.out.print(val + ", ");
+				}
+				System.out.println();
+			}
+			System.out.println();
+		}
 	}
 	
 	public void log() {

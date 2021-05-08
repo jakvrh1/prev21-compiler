@@ -31,6 +31,8 @@ public class Compiler {
 	/** Values of command line arguments. */
 	private static HashMap<String, String> cmdLine = new HashMap<String, String>();
 
+	private static int REGISTERS = 8;
+
 	/**
 	 * Returns the value of a command line argument.
 	 * 
@@ -57,6 +59,12 @@ public class Compiler {
 			for (int argc = 0; argc < args.length; argc++) {
 				if (args[argc].startsWith("--")) {
 					// Command-line switch.
+					if (args[argc].matches("--num-regs=.*")) {
+						if (cmdLine.get("--num-regs") == null) {
+							REGISTERS = Integer.parseInt(args[argc].substring(11));
+							continue;
+						}
+					}
 					if (args[argc].matches("--src-file-name=.*")) {
 						if (cmdLine.get("--src-file-name") == null) {
 							cmdLine.put("--src-file-name", args[argc]);
@@ -103,7 +111,6 @@ public class Compiler {
 					}
 				}
 			}
-
 			if (cmdLine.get("--src-file-name") == null) {
 				throw new Report.Error("Source file not specified.");
 			}
@@ -113,6 +120,8 @@ public class Compiler {
 			if (cmdLine.get("--target-phase") == null) {
 				cmdLine.put("--target-phase", phases.replaceFirst("^.*\\|", ""));
 			}
+
+			System.out.println("NUM OF REGS: " + REGISTERS);
 
 			// Compilation process carried out phase by phase.
 			while (true) {
@@ -222,6 +231,7 @@ public class Compiler {
 					break;
 
 				// Register allocation.
+
 				try (RegAll regall = new RegAll()) {
 					regall.allocate();
 					regall.log();
