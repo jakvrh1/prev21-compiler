@@ -11,8 +11,9 @@ import prev.phase.asmgen.*;
 import prev.phase.imcgen.*;
 import prev.phase.imclin.*;
 import prev.phase.lexan.*;
-import prev.phase.livean.LiveAn;
+import prev.phase.livean.*;
 import prev.phase.memory.*;
+import prev.phase.regall.*;
 import prev.phase.synan.*;
 import prev.phase.abstr.*;
 import prev.phase.seman.*;
@@ -25,7 +26,7 @@ public class Compiler {
 	// COMMAND LINE ARGUMENTS
 
 	/** All valid phases of the compiler. */
-	private static final String phases = "none|lexan|synan|abstr|seman|memory|imcgen|imclin|amsgen|livean";
+	private static final String phases = "none|lexan|synan|abstr|seman|memory|imcgen|imclin|amsgen|livean|regall";
 
 	/** Values of command line arguments. */
 	private static HashMap<String, String> cmdLine = new HashMap<String, String>();
@@ -198,8 +199,8 @@ public class Compiler {
 					Abstr.tree.accept(new ChunkGenerator(), null);
 					imclin.log();
 
-					Interpreter interpreter = new Interpreter(ImcLin.dataChunks(), ImcLin.codeChunks());
-					System.out.println("EXIT CODE: " + interpreter.run("_main"));
+					//Interpreter interpreter = new Interpreter(ImcLin.dataChunks(), ImcLin.codeChunks());
+					//System.out.println("EXIT CODE: " + interpreter.run("_main"));
 				}
 				if (Compiler.cmdLineArgValue("--target-phase").equals("imclin"))
 					break;
@@ -220,6 +221,13 @@ public class Compiler {
 				if (Compiler.cmdLineArgValue("--target-phase").equals("livean"))
 					break;
 
+				// Register allocation.
+				try (RegAll regall = new RegAll()) {
+					regall.allocate();
+					regall.log();
+				}
+				if (Compiler.cmdLineArgValue("--target-phase").equals("regall"))
+					break;
 				break;
 			}
 
