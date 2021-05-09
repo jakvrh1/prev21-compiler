@@ -2,6 +2,7 @@ package prev.phase.asmgen;
 
 import prev.data.asm.AsmInstr;
 import prev.data.asm.AsmLABEL;
+import prev.data.asm.AsmMOVE;
 import prev.data.asm.AsmOPER;
 import prev.data.imc.code.expr.ImcMEM;
 import prev.data.imc.code.expr.ImcTEMP;
@@ -64,13 +65,18 @@ public class StmtGenerator implements ImcVisitor<Vector<AsmInstr>, Object> {
         Vector<MemTemp> uses = new Vector<>();
         Vector<MemTemp> defs = new Vector<>();
 
-        uses.add(move.src.accept(new ExprGenerator(), instr));
-        defs.add(move.dst.accept(new ExprGenerator(), instr));
 
-        if (move.dst instanceof ImcTEMP)
-            instr.add(new AsmOPER("SET `d0, `s0", uses, defs, null));
-        else if (move.dst instanceof ImcMEM)
-            instr.add(new AsmOPER("STO `d0, `s0, 0", uses, defs, null));
+        if (move.dst instanceof ImcTEMP) {
+            uses.add(move.src.accept(new ExprGenerator(), instr));
+            defs.add(move.dst.accept(new ExprGenerator(), instr));
+            instr.add(new AsmMOVE("SET `d0, `s0", uses, defs));
+        }
+        else if (move.dst instanceof ImcMEM) {
+            uses.add(move.dst.accept(new ExprGenerator(), instr));
+            uses.add(move.src.accept(new ExprGenerator(), instr));
+            instr.add(new AsmOPER("STO `s0, `s1, 0", uses, defs, null));
+
+        }
 
         return instr;
     }

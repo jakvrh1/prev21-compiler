@@ -31,7 +31,7 @@ public class Compiler {
 	/** Values of command line arguments. */
 	private static HashMap<String, String> cmdLine = new HashMap<String, String>();
 
-	private static int REGISTERS = 8;
+	public static int REGISTERS = 8;
 
 	/**
 	 * Returns the value of a command line argument.
@@ -121,7 +121,7 @@ public class Compiler {
 				cmdLine.put("--target-phase", phases.replaceFirst("^.*\\|", ""));
 			}
 
-			System.out.println("NUM OF REGS: " + REGISTERS);
+			//System.out.println("NUM OF REGS: " + REGISTERS);
 
 			// Compilation process carried out phase by phase.
 			while (true) {
@@ -232,7 +232,7 @@ public class Compiler {
 
 				// Register allocation.
 
-				try (RegAll regall = new RegAll()) {
+				try (RegAll regall = new RegAll(REGISTERS)) {
 					regall.allocate();
 					regall.log();
 				}

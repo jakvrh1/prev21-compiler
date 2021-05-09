@@ -19,9 +19,64 @@ public class LiveAn extends Phase {
 		super("livean");
 	}
 
+	public void analysis(Code code) {
+		HashMap<MemLabel, AsmLABEL> jls = new HashMap<>();
+		int cSize = code.instrs.size();
+		for (int instr = 0; instr < cSize; ++instr) {
+			AsmInstr ai = code.instrs.get(instr);
+			if(ai instanceof AsmLABEL) {
+				jls.put(((AsmLABEL) ai).label, (AsmLABEL) ai);
+			}
+		}
+		while(true) {
+			boolean equal = true;
+			Vector<AsmInstr> instrs = code.instrs;
+			for(int instr = 0; instr < instrs.size(); ++instr) {
+				AsmOPER ai = (AsmOPER) instrs.get(instr);
+
+				HashSet<MemTemp> newIn = ai.out();
+				HashSet<MemTemp> newOut = new HashSet<>();
+
+				ai.defs().forEach(newIn::remove);
+				newIn.addAll(ai.uses());
+
+				/*if(ai instanceof AsmLABEL && ((AsmLABEL) ai).label.name.equals("L59")) {
+					System.out.println(((AsmLABEL) ai).label.name);
+					System.out.println(ai.out().size() + " " + ai.uses().size());
+					System.out.println(newIn.size() + " " );
+				}*/
+
+				if(instr == instrs.size() - 1)
+					break;
+
+				if(!ai.jumps().isEmpty()) {
+					for(MemLabel ml : ai.jumps()) {
+						if(jls.get(ml) != null)
+							newOut.addAll(jls.get(ml).in());
+					}
+				} else
+					newOut.addAll(instrs.get(instr + 1).in());
+
+				if(!ai.in().equals(newIn)) equal = false;
+				if(!ai.out().equals(newOut)) equal = false;
+
+				ai.removeAllFromIn();
+				ai.removeAllFromOut();
+
+				ai.addInTemps(newIn);
+				ai.addOutTemp(newOut);
+			}
+
+			if(equal) break;
+		}
+
+
+	}
+
+
 	public void analysis() {
 
-		HashMap<MemLabel, AsmLABEL> jls = new HashMap<>();
+		/*HashMap<MemLabel, AsmLABEL> jls = new HashMap<>();
 
 		for(int c = 0; c < AsmGen.codes.size(); ++c) {
 			int cSize = AsmGen.codes.get(c).instrs.size();
@@ -31,9 +86,13 @@ public class LiveAn extends Phase {
 					jls.put(((AsmLABEL) ai).label, (AsmLABEL) ai);
 				}
 			}
+		}*/
+
+		for(Code code : AsmGen.codes) {
+			analysis(code);
 		}
 
-		for(int i = 0; ; i++) {
+		/*while(true) {
 		    boolean equal = true;
 	    	for(int c = 0; c < AsmGen.codes.size(); ++c) {
 				Vector<AsmInstr> instrs = AsmGen.codes.get(c).instrs;
@@ -69,7 +128,9 @@ public class LiveAn extends Phase {
 			}
 
 	    	if(equal) break;
-		}
+		}*/
+
+
 	}
 	
 	public void log() {
