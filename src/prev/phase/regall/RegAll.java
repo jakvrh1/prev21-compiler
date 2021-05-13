@@ -15,9 +15,12 @@ import prev.phase.asmgen.*;
 public class RegAll extends Phase {
 	
 	/** Mapping of temporary variables to registers. */
-	public final HashMap<MemTemp, Integer> tempToReg = new HashMap<MemTemp, Integer>();
+	public static final HashMap<MemTemp, Integer> tempToReg = new HashMap<MemTemp, Integer>();
 
 	private int REGISTERS = 8;
+	private int FP_REGISTER = 254;
+
+	//private int SPILL_COUNTER = 0;
 
 	public RegAll() {
 		super("regall");
@@ -49,7 +52,6 @@ public class RegAll extends Phase {
 				for(MemTemp j : instr.out())
 					if(i != j) G.get(i).add(j);
 			}
-
 		}
 
 		return G;
@@ -106,9 +108,13 @@ public class RegAll extends Phase {
 				var t = takenNodes.removeLast();
 				var s = nodeStatus.removeLast();
 
+				if(t == code.frame.FP) {
+					tempToReg.put(t, FP_REGISTER);
+					continue;
+				}
 				boolean []usedNums = new boolean[REGISTERS];
 				for(var a : G.get(t)) {
-					if(tempToReg.containsKey(a))
+					if(tempToReg.containsKey(a) && tempToReg.get(a) != FP_REGISTER)
 						usedNums[tempToReg.get(a)] = true;
 				}
 				boolean isSpill = s;
@@ -123,10 +129,9 @@ public class RegAll extends Phase {
 				if(isSpill) {
 					// TODO
 					System.out.println("SPILL");
+					//System.out.println(SPILL_COUNTER++);
 				}
 			}
-
-
 
 			// remove SET $X, $X
 			code.instrs.removeIf(instr -> {

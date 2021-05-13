@@ -13,6 +13,7 @@ import prev.phase.imclin.*;
 import prev.phase.lexan.*;
 import prev.phase.livean.*;
 import prev.phase.memory.*;
+import prev.phase.outfile.OutFile;
 import prev.phase.regall.*;
 import prev.phase.synan.*;
 import prev.phase.abstr.*;
@@ -32,6 +33,7 @@ public class Compiler {
 	private static HashMap<String, String> cmdLine = new HashMap<String, String>();
 
 	public static int REGISTERS = 8;
+	private static boolean DEBUG = true;
 
 	/**
 	 * Returns the value of a command line argument.
@@ -133,12 +135,14 @@ public class Compiler {
 						}
 						break;
 					}
+				if(DEBUG) System.out.println("Lexical analysis done.");
 
 				// Syntax analysis
 				try (LexAn lexan = new LexAn(); SynAn synan = new SynAn(lexan)) {
 					SynAn.tree = synan.parser.source();
 					synan.log(SynAn.tree);
 				}
+				if(DEBUG) System.out.println("Syntax analysis done.");
 				if(Compiler.cmdLineArgValue("--target-phase").equals("synan"))
 					break;
 
@@ -148,6 +152,7 @@ public class Compiler {
 					AbsLogger logger = new AbsLogger(abstr.logger);
 					Abstr.tree.accept(logger, "Decls");
 				}
+				if(DEBUG) System.out.println("Abstract syntax tree construction done.");
 				if (Compiler.cmdLineArgValue("--target-phase").equals("abstr"))
 					break;
 
@@ -174,6 +179,7 @@ public class Compiler {
 					logger.addSubvisitor(new SemLogger(seman.logger));
 					Abstr.tree.accept(logger, "Decls");
 				}
+				if(DEBUG) System.out.println("Semantic analysis done.");
 				if (Compiler.cmdLineArgValue("--target-phase").equals("seman"))
 					break;
 
@@ -188,6 +194,7 @@ public class Compiler {
 					logger.addSubvisitor(new MemLogger(memory.logger));
 					Abstr.tree.accept(logger, "Decls");
 				}
+				if(DEBUG) System.out.println("Memory layout done.");
 				if (Compiler.cmdLineArgValue("--target-phase").equals("memory"))
 					break;
 
@@ -200,6 +207,7 @@ public class Compiler {
 					logger.addSubvisitor(new ImcLogger(imcgen.logger));
 					Abstr.tree.accept(logger, "Decls");
 				}
+				if(DEBUG) System.out.println("Intermediate code generator done.");
 				if (Compiler.cmdLineArgValue("--target-phase").equals("imcgen"))
 					break;
 
@@ -211,6 +219,7 @@ public class Compiler {
 					//Interpreter interpreter = new Interpreter(ImcLin.dataChunks(), ImcLin.codeChunks());
 					//System.out.println("EXIT CODE: " + interpreter.run("_main"));
 				}
+				if(DEBUG) System.out.println("Linearization of IMC done.");
 				if (Compiler.cmdLineArgValue("--target-phase").equals("imclin"))
 					break;
 
@@ -219,6 +228,7 @@ public class Compiler {
 					asmgen.genAsmCodes();
 					asmgen.log();
 				}
+				if(DEBUG) System.out.println("Machine code generator done.");
 				if (Compiler.cmdLineArgValue("--target-phase").equals("amsgen"))
 					break;
 
@@ -227,17 +237,25 @@ public class Compiler {
 					livean.analysis();
 					livean.log();
 				}
+				if(DEBUG) System.out.println("Liveness analysis done.");
 				if (Compiler.cmdLineArgValue("--target-phase").equals("livean"))
 					break;
 
 				// Register allocation.
-
 				try (RegAll regall = new RegAll(REGISTERS)) {
 					regall.allocate();
 					regall.log();
 				}
+				if(DEBUG) System.out.println("Register allocation done.");
 				if (Compiler.cmdLineArgValue("--target-phase").equals("regall"))
 					break;
+
+				try(OutFile outFile = new OutFile()) {
+				    outFile.createMMIXProgram();
+
+					if(DEBUG)
+						outFile.printProgram();
+				}
 				break;
 			}
 
