@@ -252,6 +252,7 @@ public class Compiler {
 
 				try(OutFile outFile = new OutFile()) {
 				    outFile.createMMIXProgram();
+				    outFile.writeProgram();
 
 					if(DEBUG)
 						outFile.printProgram();

@@ -31,7 +31,7 @@ public class StmtGenerator implements ImcVisitor<Vector<AsmInstr>, Object> {
         jumps.add(cjump.negLabel);
         jumps.add(cjump.posLabel);
 
-        instr.add(new AsmOPER("BP `s0, " + cjump.posLabel.name, uses, null, jumps));
+        instr.add(new AsmOPER("BP `s0," + cjump.posLabel.name, uses, null, jumps));
 
         return instr;
     }
@@ -69,12 +69,12 @@ public class StmtGenerator implements ImcVisitor<Vector<AsmInstr>, Object> {
         if (move.dst instanceof ImcTEMP) {
             uses.add(move.src.accept(new ExprGenerator(), instr));
             defs.add(move.dst.accept(new ExprGenerator(), instr));
-            instr.add(new AsmMOVE("SET `d0, `s0", uses, defs));
+            instr.add(new AsmMOVE("SET `d0,`s0", uses, defs));
         }
         else if (move.dst instanceof ImcMEM) {
             uses.add(move.dst.accept(new ExprGenerator(), instr));
             uses.add(move.src.accept(new ExprGenerator(), instr));
-            instr.add(new AsmOPER("STO `s0, `s1, 0", uses, defs, null));
+            instr.add(new AsmOPER("STO `s0,`s1,0", uses, defs, null));
 
         }
 

@@ -32,7 +32,7 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
             uses.add(createConstant(-1, visArg));
             defs.add(new MemTemp());
 
-            visArg.add(new AsmOPER("MUL `d0, `s0, `s1", uses, defs, null));
+            visArg.add(new AsmOPER("MUL `d0,`s0,`s1", uses, defs, null));
             return defs.lastElement();
         } else if (binOp.oper == ImcBINOP.Oper.GTH) {
             instr.set(0, "SUB");
@@ -44,7 +44,7 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
             uses.add(sub_mt);
             defs.add(new MemTemp());
 
-            visArg.add(new AsmOPER("CMP `d0, `s0, 1", uses, defs, null));
+            visArg.add(new AsmOPER("CMP `d0,`s0,1", uses, defs, null));
             MemTemp cmp_mt = defs.lastElement();
 
             uses = new Vector<>();
@@ -54,7 +54,7 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
             uses.add(createConstant(-1, visArg));
             defs.add(new MemTemp());
 
-            visArg.add(new AsmOPER("MUL `d0, `s0, `s1", uses, defs, null));
+            visArg.add(new AsmOPER("MUL `d0,`s0,`s1", uses, defs, null));
             return defs.lastElement();
         } else if (binOp.oper == ImcBINOP.Oper.GEQ) {
             instr.set(0, "SUB");
@@ -64,14 +64,14 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
             uses.add(createConstant(-1, visArg));
             defs.add(new MemTemp());
 
-            visArg.add(new AsmOPER("CMP `d0, `s0, `s1", uses, defs, null));
+            visArg.add(new AsmOPER("CMP `d0,`s0,`s1", uses, defs, null));
             return defs.lastElement();
         } else if (binOp.oper == ImcBINOP.Oper.MOD) {
             instr.set(0, "DIV");
             addInstruction(instr, binOp, visArg);
 
             defs.add(new MemTemp());
-            visArg.add(new AsmOPER("GET `d0, rR", null, defs, null));
+            visArg.add(new AsmOPER("GET `d0,rR", null, defs, null));
 
             return defs.lastElement();
         } else {
@@ -99,13 +99,13 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
 
         if (isNegative) value *= -1;
 
-        visArg.add(new AsmOPER(String.format("SETL `d0, %d", value & 0x000000000000FFFFL), null, defs, null));
+        visArg.add(new AsmOPER(String.format("SETL `d0,%d", value & 0x000000000000FFFFL), null, defs, null));
         if ((value & 0x00000000FFFF0000L) > 0)
-            visArg.add(new AsmOPER(String.format("INCML `d0, %d", value & 0x00000000FFFF0000L), null, defs, null));
+            visArg.add(new AsmOPER(String.format("INCML `d0,%d", value & 0x00000000FFFF0000L), null, defs, null));
         if ((value & 0x0000FFFF00000000L) > 0)
-            visArg.add(new AsmOPER(String.format("INCMH `d0, %d", value & 0x0000FFFF00000000L), null, defs, null));
+            visArg.add(new AsmOPER(String.format("INCMH `d0,%d", value & 0x0000FFFF00000000L), null, defs, null));
         if ((value & 0xFFFF000000000000L) > 0)
-            visArg.add(new AsmOPER(String.format("INCH `d0, %d", value & 0xFFFF000000000000L), null, defs, null));
+            visArg.add(new AsmOPER(String.format("INCH `d0,%d", value & 0xFFFF000000000000L), null, defs, null));
 
         if (isNegative) {
             Vector<MemTemp> uses = new Vector<>();
@@ -113,7 +113,7 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
             defs = new Vector<>();
             defs.add(new MemTemp());
 
-            visArg.add(new AsmOPER("NEG `d0, `s0", uses, defs, null));
+            visArg.add(new AsmOPER("NEG `d0,`s0", uses, defs, null));
             return defs.lastElement();
         }
 
@@ -133,7 +133,7 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
         else
             uses.add(binOp.sndExpr.accept(this, visArg));
 
-        visArg.add(new AsmOPER(instr.get(0) + " " + instr.get(1) + ", " + instr.get(2) + ", " + instr.get(3), uses, defs, null));
+        visArg.add(new AsmOPER(instr.get(0) + " " + instr.get(1) + "," + instr.get(2) + "," + instr.get(3), uses, defs, null));
 
         return mt;
     }
@@ -146,17 +146,17 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
         for(int i = 0; i < call.args.size(); ++i) {
             uses = new Vector<>();
             uses.add(call.args.get(i).accept(this, visArg));
-            visArg.add(new AsmOPER("STO `s0, $253, " + call.offs.get(i), uses, null, null));
+            visArg.add(new AsmOPER("STO `s0,$253," + call.offs.get(i), uses, null, null));
         }
         //MemTemp x = createConstant(call.args.size(), visArg);
         //uses.add(x);
         //visArg.add(new AsmOPER("PUSHJ `s0, " + call.label.name, null, null, null));
-        visArg.add(new AsmOPER("PUSHJ $" + Compiler.REGISTERS + ", " + call.label.name, null, null, null));
+        visArg.add(new AsmOPER("PUSHJ $" + Compiler.REGISTERS + "," + call.label.name, null, null, null));
 
         Vector<MemTemp> defs = new Vector<>();
         defs.add(new MemTemp());
 
-        visArg.add(new AsmOPER("LDO `d0, $253, 0", null, defs, null));
+        visArg.add(new AsmOPER("LDO `d0,$253,0", null, defs, null));
 
         return defs.lastElement();
     }
@@ -169,7 +169,7 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
         uses.add(mt);
         defs.add(new MemTemp());
 
-        visArg.add(new AsmOPER("LDO `d0, `s0, 0", uses, defs, null));
+        visArg.add(new AsmOPER("LDO `d0,`s0,0", uses, defs, null));
 
         return defs.lastElement();
     }
@@ -178,8 +178,8 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
     public MemTemp visit(ImcNAME name, Vector<AsmInstr> visArg) {
         Vector<MemTemp> defs = new Vector<>();
         defs.add(new MemTemp());
-        visArg.add(new AsmOPER("LDA `d0, " + name.label.name, null, defs, null));
-        visArg.add(new AsmOPER("LDO `d0, `s0, 0", defs, defs, null));
+        visArg.add(new AsmOPER("LDA `d0," + name.label.name, null, defs, null));
+        visArg.add(new AsmOPER("LDO `d0,`s0,0", defs, defs, null));
 
         return defs.lastElement();
     }
@@ -196,10 +196,10 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
         String instr = "";
         switch (unOp.oper) {
             case NOT:
-                instr = "NOR `d0, `s0, 0";
+                instr = "NOR `d0,`s0,0";
                 break;
             case SUB:
-                instr = "NEG `d0, `s0";
+                instr = "NEG `d0,`s0";
                 break;
         }
 
