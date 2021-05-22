@@ -33,6 +33,8 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
             defs.add(new MemTemp());
 
             visArg.add(new AsmOPER("MUL `d0,`s0,`s1", uses, defs, null));
+
+
             return defs.lastElement();
         } else if (binOp.oper == ImcBINOP.Oper.GTH) {
             instr.set(0, "SUB");
@@ -74,12 +76,33 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
             visArg.add(new AsmOPER("GET `d0,rR", null, defs, null));
 
             return defs.lastElement();
-        } else {
+        } else if(binOp.oper == ImcBINOP.Oper.EQU) {
+            instr.set(0, "CMP");
+            MemTemp equ_mt = addInstruction(instr, binOp, visArg);
+
+            uses.add(equ_mt);
+            defs.add(equ_mt);
+
+            visArg.add(new AsmOPER("ZSZ `d0,`s0,1", uses, defs, null));
+
+            return defs.lastElement();
+        } else if(binOp.oper == ImcBINOP.Oper.NEQ) {
+            instr.set(0, "CMP");
+            MemTemp equ_mt = addInstruction(instr, binOp, visArg);
+
+            uses.add(equ_mt);
+            defs.add(equ_mt);
+
+            visArg.add(new AsmOPER("ZSN `d0,`s0,1", uses, defs, null));
+
+            return defs.lastElement();
+        }
+        else {
             switch (binOp.oper) {
                 case OR -> instr.set(0, "OR");
                 case AND -> instr.set(0, "AND");
-                case EQU -> instr.set(0, "NXOR");
-                case NEQ -> instr.set(0, "XOR");
+                //case EQU -> instr.set(0, "NXOR");
+                //case NEQ -> instr.set(0, "XOR");
                 case ADD -> instr.set(0, "ADD");
                 case SUB -> instr.set(0, "SUB");
                 case MUL -> instr.set(0, "MUL");
@@ -99,13 +122,16 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
 
         if (isNegative) value *= -1;
 
+
+        visArg.add(new AsmOPER(String.format("AND `d0,$255,%d", 0), null, defs, null));
+
         visArg.add(new AsmOPER(String.format("SETL `d0,%d", value & 0x000000000000FFFFL), null, defs, null));
         if ((value & 0x00000000FFFF0000L) > 0)
-            visArg.add(new AsmOPER(String.format("INCML `d0,%d", value & 0x00000000FFFF0000L), null, defs, null));
+            visArg.add(new AsmOPER(String.format("INCML `d0,%d", ((value & 0x00000000FFFF0000L) >> 4*4)), null, defs, null));
         if ((value & 0x0000FFFF00000000L) > 0)
-            visArg.add(new AsmOPER(String.format("INCMH `d0,%d", value & 0x0000FFFF00000000L), null, defs, null));
+            visArg.add(new AsmOPER(String.format("INCMH `d0,%d", ((value & 0x0000FFFF00000000L) >> 8*4)), null, defs, null));
         if ((value & 0xFFFF000000000000L) > 0)
-            visArg.add(new AsmOPER(String.format("INCH `d0,%d", value & 0xFFFF000000000000L), null, defs, null));
+            visArg.add(new AsmOPER(String.format("INCH `d0,%d", ((value & 0xFFFF000000000000L) >> 12*4)), null, defs, null));
 
         if (isNegative) {
             Vector<MemTemp> uses = new Vector<>();
@@ -164,6 +190,8 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
     @Override
     public MemTemp visit(ImcMEM mem, Vector<AsmInstr> visArg) {
         MemTemp mt = mem.addr.accept(this, visArg);
+        if(StmtGenerator.IS_PARENT) return mt;
+
         Vector<MemTemp> uses = new Vector<>();
         Vector<MemTemp> defs = new Vector<>();
         uses.add(mt);
@@ -179,7 +207,7 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
         Vector<MemTemp> defs = new Vector<>();
         defs.add(new MemTemp());
         visArg.add(new AsmOPER("LDA `d0," + name.label.name, null, defs, null));
-        visArg.add(new AsmOPER("LDO `d0,`s0,0", defs, defs, null));
+        //visArg.add(new AsmOPER("LDO `d0,`s0,0", defs, defs, null));
 
         return defs.lastElement();
     }
@@ -196,7 +224,8 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
         String instr = "";
         switch (unOp.oper) {
             case NOT:
-                instr = "NOR `d0,`s0,0";
+                //instr = "NOR `d0,`s0,0";
+                instr = "ZSZ `d0,`s0,1";
                 break;
             case SUB:
                 instr = "NEG `d0,`s0";

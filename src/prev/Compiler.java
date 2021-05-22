@@ -250,13 +250,13 @@ public class Compiler {
 				if (Compiler.cmdLineArgValue("--target-phase").equals("regall"))
 					break;
 
-				try(OutFile outFile = new OutFile()) {
-				    outFile.createMMIXProgram();
-				    outFile.writeProgram();
+				OutFile outFile = new OutFile();
+				outFile.createMMIXProgram();
+				outFile.writeProgram();
 
-					if(DEBUG)
-						outFile.printProgram();
-				}
+				if(DEBUG)
+					outFile.printProgram();
+
 				break;
 			}
 

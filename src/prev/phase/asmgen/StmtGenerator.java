@@ -18,6 +18,8 @@ import java.util.Vector;
  */
 public class StmtGenerator implements ImcVisitor<Vector<AsmInstr>, Object> {
 
+    static public boolean IS_PARENT = false;
+
     @Override
     public Vector<AsmInstr> visit(ImcCJUMP cjump, Object visArg) {
         Vector<AsmInstr> instr = new Vector<>();
@@ -72,9 +74,11 @@ public class StmtGenerator implements ImcVisitor<Vector<AsmInstr>, Object> {
             instr.add(new AsmMOVE("SET `d0,`s0", uses, defs));
         }
         else if (move.dst instanceof ImcMEM) {
+            IS_PARENT = true;
             uses.add(move.dst.accept(new ExprGenerator(), instr));
+            IS_PARENT = false;
             uses.add(move.src.accept(new ExprGenerator(), instr));
-            instr.add(new AsmOPER("STO `s0,`s1,0", uses, defs, null));
+            instr.add(new AsmOPER("STO `s1,`s0,0", uses, defs, null));
 
         }
 

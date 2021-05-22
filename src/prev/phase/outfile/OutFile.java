@@ -12,28 +12,34 @@ import prev.phase.regall.RegAll;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 
-public class OutFile extends Phase {
+public class OutFile {
 
     public LinkedList<String> mmix = new LinkedList<>();
     public String FILE_NAME = "out.mms";
+    public HashMap<String, Boolean> stdFun = new HashMap<>();
 
     public OutFile() {
-        super("out");
+    }
+
+    private String putChar() {
+        return "\n\t\t# PUTCHAR \n\t\tLDO Temp,$253,8\n" + "\t\tLDA $255,OutBuffer\n" + "\t\tSTB Temp,$255,0\n" + "\t\tTRAP 0,Fputs,StdOut\n";
     }
 
     private void addStaticData(LinDataChunk ldc) {
         if(ldc.init == null) {
             mmix.add(ldc.label.name + "\t\tOCTA");
         } else {
-            mmix.add(ldc.label.name + "\t\tBYTE" + ldc.init);
+            mmix.add(ldc.label.name + "\t\tBYTE " + ldc.init);
         }
     }
 
     private void dataChunks() {
         mmix.add("\t\tLOC Data_Segment");
         mmix.add("\t\tGREG @");
+        mmix.add("OutBuffer\tBYTE");
         for(LinDataChunk ldc : ImcLin.dataChunks()) {
             addStaticData(ldc);
         }
@@ -87,11 +93,11 @@ public class OutFile extends Phase {
 
         mmix.add("\t\tSETL $" + reg + "," + (value & 0x000000000000FFFFL));
         if ((value & 0x00000000FFFF0000L) > 0)
-            mmix.add("\t\tINCML $" + reg + "," + (value & 0x00000000FFFF0000L));
+            mmix.add("\t\tINCML $" + reg + "," + ((value & 0x00000000FFFF0000L) >> 4*4 ));
         if ((value & 0x0000FFFF00000000L) > 0)
-            mmix.add("\t\tINCMH $" + reg + "," + (value & 0x0000FFFF00000000L));
+            mmix.add("\t\tINCMH $" + reg + "," + ((value & 0x0000FFFF00000000L) >> 8*4));
         if ((value & 0xFFFF000000000000L) > 0)
-            mmix.add("\t\tINCH $" + reg + "," + (value & 0xFFFF000000000000L));
+            mmix.add("\t\tINCH $" + reg + "," + ((value & 0xFFFF000000000000L) >> 12*4));
     }
 
     private void epilogue(Code code) {
@@ -145,6 +151,10 @@ public class OutFile extends Phase {
                 }
                 line += "\t\t" + code.instrs.get(i).toString(RegAll.tempToReg);
 
+                if(line.substring(line.length() - 8).equals("_putChar")) {
+                    line = putChar();
+                }
+
                 mmix.add(line);
             }
             /*for(AsmInstr instr : code.instrs)
@@ -159,7 +169,8 @@ public class OutFile extends Phase {
     public void setStack() {
         mmix.add("\t\tLOC Stack_Segment");
         mmix.add("\t\tGREG @");
-        mmix.add("\t\tGREG @\n");
+        mmix.add("\t\tGREG @");
+        mmix.add("Temp\t\tGREG @\n");
     }
 
     public void createMMIXProgram() {
