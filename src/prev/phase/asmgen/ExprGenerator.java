@@ -128,7 +128,7 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
         if (isNegative) value *= -1;
 
 
-        visArg.add(new AsmOPER(String.format("AND `d0,$255,%d", 0), null, defs, null));
+        //visArg.add(new AsmOPER(String.format("AND `d0,$255,%d", 0), null, defs, null));
 
         visArg.add(new AsmOPER(String.format("SETL `d0,%d", value & 0x000000000000FFFFL), null, defs, null));
         if ((value & 0x00000000FFFF0000L) > 0)
@@ -194,8 +194,11 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
 
     @Override
     public MemTemp visit(ImcMEM mem, Vector<AsmInstr> visArg) {
+        boolean FLAG = StmtGenerator.IS_PARENT;
+        StmtGenerator.IS_PARENT = false;
         MemTemp mt = mem.addr.accept(this, visArg);
-        if(StmtGenerator.IS_PARENT) return mt;
+        if(FLAG) return mt;
+
 
         Vector<MemTemp> uses = new Vector<>();
         Vector<MemTemp> defs = new Vector<>();

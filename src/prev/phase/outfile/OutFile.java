@@ -19,7 +19,7 @@ public class OutFile {
 
     public LinkedList<String> mmix = new LinkedList<>();
     public String FILE_NAME = "out.mms";
-    public HashMap<String, Boolean> stdFun = new HashMap<>();
+    private int STACK_SIZE = 1; // used with SETH
 
     public OutFile() {
     }
@@ -32,7 +32,7 @@ public class OutFile {
         if(ldc.init == null) {
             mmix.add(ldc.label.name + "\t\tOCTA");
         } else {
-            mmix.add(ldc.label.name + "\t\tBYTE " + ldc.init);
+            mmix.add(ldc.label.name + "\t\tOCTA " + ldc.init + ",0");
         }
     }
 
@@ -40,6 +40,7 @@ public class OutFile {
         mmix.add("\t\tLOC Data_Segment");
         mmix.add("\t\tGREG @");
         mmix.add("OutBuffer\tBYTE");
+        mmix.add("\t\tBYTE 0");
         for(LinDataChunk ldc : ImcLin.dataChunks()) {
             addStaticData(ldc);
         }
@@ -86,12 +87,19 @@ public class OutFile {
     }
 
     private void storeConstant(int reg, long value, Code code) {
+        /*
         if(code != null)
             mmix.add(code.frame.label.name + "\t\tAND $" + reg + ",$" + reg + ",0");
         else
             mmix.add("\t\tAND $" + reg + ",$" + reg + ",0");
+         */
 
-        mmix.add("\t\tSETL $" + reg + "," + (value & 0x000000000000FFFFL));
+
+        if(code != null)
+            mmix.add(code.frame.label.name + "\t\tSETL $" + reg + "," + (value & 0x000000000000FFFFL));
+        else
+            mmix.add("\t\tSETL $" + reg + "," + (value & 0x000000000000FFFFL));
+
         if ((value & 0x00000000FFFF0000L) > 0)
             mmix.add("\t\tINCML $" + reg + "," + ((value & 0x00000000FFFF0000L) >> 4*4 ));
         if ((value & 0x0000FFFF00000000L) > 0)
@@ -151,7 +159,7 @@ public class OutFile {
                 }
                 line += "\t\t" + code.instrs.get(i).toString(RegAll.tempToReg);
 
-                if(line.substring(line.length() - 8).equals("_putChar")) {
+                if(line.length() >= 10 && line.substring(line.length() - 8).equals("_putChar")) {
                     line = putChar();
                 }
 
@@ -182,9 +190,9 @@ public class OutFile {
     }
 
     private void callMain() {
-        mmix.add("Main\tSETL FP,16000");
-        mmix.add("\t\tSETL SP,16000");
-        mmix.add("\t\tSETL Temp,16200");
+        mmix.add("Main\tSETMH FP," + STACK_SIZE);
+        mmix.add("\t\tSETMH SP," + STACK_SIZE);
+        mmix.add("\t\tSETMH Temp," + (STACK_SIZE + 1));
         mmix.add("\t\tPUSHJ $" + Compiler.REGISTERS + ",_main");
         mmix.add("\t\tTRAP 0,Halt,0");
     }
