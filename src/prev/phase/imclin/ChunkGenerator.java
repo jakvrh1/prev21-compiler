@@ -62,7 +62,9 @@ public class ChunkGenerator extends AstFullVisitor<Object, Object> {
         basicCan(0, body, basic_body);
 
         Vector<Vector<ImcStmt>> listOfBlocks = createListOfBlocks(basic_body);
+
         Vector<ImcStmt> listOfTBlocks = traces(listOfBlocks);
+
 
         for(int i = 1; i < listOfTBlocks.size(); ++i) {
             if (listOfTBlocks.get(i - 1) instanceof ImcJUMP && listOfTBlocks.get(i) instanceof ImcLABEL) {

@@ -255,7 +255,7 @@ public class Compiler {
 				outFile.writeProgram();
 
 				if(DEBUG)
-					outFile.printProgram();
+					//outFile.printProgram();
 
 				break;
 			}

@@ -25,7 +25,7 @@ public class OutFile {
     }
 
     private String putChar() {
-        return "\n\t\t# PUTCHAR \n\t\tLDO Temp,$253,8\n" + "\t\tLDA $255,OutBuffer\n" + "\t\tSTB Temp,$255,0\n" + "\t\tTRAP 0,Fputs,StdOut\n";
+        return "\t\tLDO Temp,$253,8\n" + "\t\tLDA $255,OutBuffer\n" + "\t\tSTB Temp,$255,0\n" + "\t\tTRAP 0,Fputs,StdOut\n";
     }
 
     private void addStaticData(LinDataChunk ldc) {
@@ -151,16 +151,26 @@ public class OutFile {
         for(Code code: AsmGen.codes) {
             prologue(code);
             mmix.add("# Body");
+            //System.out.println(code.instrs.lastElement());
             for(int i = 1; i < code.instrs.size(); ++i) {
-                if(code.instrs.get(i) instanceof AsmLABEL) continue;
                 String line = "";
+                if(code.instrs.get(i - 1) instanceof AsmLABEL && code.instrs.get(i) instanceof AsmLABEL) {
+                    line = ((AsmLABEL) code.instrs.get(i - 1)).label.name;
+                    line += " SWYM";
+                    mmix.add(line);
+                    continue;
+                }
+                if(code.instrs.get(i) instanceof AsmLABEL) continue;
+
                 if(code.instrs.get(i - 1) instanceof AsmLABEL) {
                    line = ((AsmLABEL) code.instrs.get(i - 1)).label.name;
                 }
-                line += "\t\t" + code.instrs.get(i).toString(RegAll.tempToReg);
-
-                if(line.length() >= 10 && line.substring(line.length() - 8).equals("_putChar")) {
-                    line = putChar();
+                String temp = "\t\t" + code.instrs.get(i).toString(RegAll.tempToReg);
+                if(temp.contains("_putChar")) {
+                    mmix.add("\n\t\t#PUTCHAR");
+                    line += putChar();
+                } else {
+                    line += temp;
                 }
 
                 mmix.add(line);

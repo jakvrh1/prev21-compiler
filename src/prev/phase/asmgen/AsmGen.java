@@ -31,6 +31,7 @@ public class AsmGen extends Phase {
 		for (ImcStmt stmt : codeChunk.stmts()) {
 			instrs.addAll(stmt.accept(new StmtGenerator(), null));
 		}
+
 		return new Code(codeChunk.frame, codeChunk.entryLabel, codeChunk.exitLabel, instrs);
 	}
 
