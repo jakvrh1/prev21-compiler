@@ -29,11 +29,9 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
             MemTemp sub_mt = addInstruction(instr, binOp, visArg);
 
             uses.add(sub_mt);
-            uses.add(createConstant(-1, visArg));
-            defs.add(new MemTemp());
+            defs.add(sub_mt);
 
-            visArg.add(new AsmOPER("MUL `d0,`s0,`s1", uses, defs, null));
-
+            visArg.add(new AsmOPER("NEG `d0,`s0", uses, defs, null));
 
             return defs.lastElement();
         } else if (binOp.oper == ImcBINOP.Oper.GTH) {
@@ -53,10 +51,17 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
             defs = new Vector<>();
 
             uses.add(cmp_mt);
+            defs.add(cmp_mt);
+
+            visArg.add(new AsmOPER("NEG `d0,`s0", uses, defs, null));
+
+            /*uses.add(cmp_mt);
             uses.add(createConstant(-1, visArg));
             defs.add(new MemTemp());
 
             visArg.add(new AsmOPER("MUL `d0,`s0,`s1", uses, defs, null));
+             */
+
             return defs.lastElement();
         } else if (binOp.oper == ImcBINOP.Oper.GEQ) {
             instr.set(0, "SUB");
@@ -93,7 +98,7 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
             uses.add(equ_mt);
             defs.add(equ_mt);
 
-            visArg.add(new AsmOPER("ZSN `d0,`s0,1", uses, defs, null));
+            visArg.add(new AsmOPER("ZSNZ `d0,`s0,1", uses, defs, null));
 
             return defs.lastElement();
         }

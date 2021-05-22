@@ -167,10 +167,10 @@ public class OutFile {
     }
 
     public void setStack() {
-        mmix.add("\t\tLOC Stack_Segment");
-        mmix.add("\t\tGREG @");
-        mmix.add("\t\tGREG @");
-        mmix.add("Temp\t\tGREG @\n");
+        //mmix.add("\t\tLOC Stack_Segment");
+        mmix.add("FP\t\tGREG ");
+        mmix.add("SP\t\tGREG ");
+        mmix.add("Temp\tGREG\n");
     }
 
     public void createMMIXProgram() {
@@ -182,7 +182,10 @@ public class OutFile {
     }
 
     private void callMain() {
-        mmix.add("Main\t\tPUSHJ $" + Compiler.REGISTERS + ",_main");
+        mmix.add("Main\tSETL FP,16000");
+        mmix.add("\t\tSETL SP,16000");
+        mmix.add("\t\tSETL Temp,16200");
+        mmix.add("\t\tPUSHJ $" + Compiler.REGISTERS + ",_main");
         mmix.add("\t\tTRAP 0,Halt,0");
     }
 
