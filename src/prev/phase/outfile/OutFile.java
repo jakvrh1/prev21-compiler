@@ -151,21 +151,23 @@ public class OutFile {
         for(Code code: AsmGen.codes) {
             prologue(code);
             mmix.add("# Body");
-            //System.out.println(code.instrs.lastElement());
+
             for(int i = 1; i < code.instrs.size(); ++i) {
                 String line = "";
                 if(code.instrs.get(i - 1) instanceof AsmLABEL && code.instrs.get(i) instanceof AsmLABEL) {
                     line = ((AsmLABEL) code.instrs.get(i - 1)).label.name;
-                    line += " SWYM";
+                    line += "\t\tSWYM";
                     mmix.add(line);
                     continue;
                 }
+
                 if(code.instrs.get(i) instanceof AsmLABEL) continue;
 
-                if(code.instrs.get(i - 1) instanceof AsmLABEL) {
+                if(code.instrs.get(i - 1) instanceof AsmLABEL)
                    line = ((AsmLABEL) code.instrs.get(i - 1)).label.name;
-                }
+
                 String temp = "\t\t" + code.instrs.get(i).toString(RegAll.tempToReg);
+
                 if(temp.contains("_putChar")) {
                     mmix.add("\n\t\t#PUTCHAR");
                     line += putChar();
@@ -175,10 +177,6 @@ public class OutFile {
 
                 mmix.add(line);
             }
-            /*for(AsmInstr instr : code.instrs)
-                mmix.add("\t" + instr.toString(RegAll.tempToReg));
-
-             */
 
             epilogue(code);
         }

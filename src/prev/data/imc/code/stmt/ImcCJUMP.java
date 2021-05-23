@@ -44,7 +44,7 @@ public class ImcCJUMP extends ImcStmt {
 	public void log(Logger logger) {
 		logger.begElement("imc");
 		logger.addAttribute("instruction",
-				"CJUMP(" + posLabel.name + "," + negLabel.name + ")");
+				"CJUMP(POS=" + posLabel.name + ",NEG=" + negLabel.name + ")");
 		cond.log(logger);
 		logger.endElement();
 	}

@@ -69,7 +69,7 @@ public class Logger implements AutoCloseable {
 		// Dump the log document out.
 		try {
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
-			javax.xml.transform.Transformer transformer = transformerFactory.newTransformer();
+			Transformer transformer = transformerFactory.newTransformer();
 			DOMSource source = new DOMSource(doc);
 			StreamResult result = new StreamResult(new File(xmlFileName));
 			transformer.transform(source, result);

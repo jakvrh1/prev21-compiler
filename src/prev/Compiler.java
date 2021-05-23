@@ -27,7 +27,7 @@ public class Compiler {
 	// COMMAND LINE ARGUMENTS
 
 	/** All valid phases of the compiler. */
-	private static final String phases = "none|lexan|synan|abstr|seman|memory|imcgen|imclin|amsgen|livean|regall";
+	private static final String phases = "none|lexan|synan|abstr|seman|memory|imcgen|imclin|asmgen|livean|regall";
 
 	/** Values of command line arguments. */
 	private static HashMap<String, String> cmdLine = new HashMap<String, String>();
@@ -149,8 +149,12 @@ public class Compiler {
 				// Abstract syntax tree construction.
 				try (Abstr abstr = new Abstr()) {
 					Abstr.tree = SynAn.tree.ast;
+
+					/*
 					AbsLogger logger = new AbsLogger(abstr.logger);
 					Abstr.tree.accept(logger, "Decls");
+
+					 */
 				}
 				if(DEBUG) System.out.println("Abstract syntax tree construction done.");
 				if (Compiler.cmdLineArgValue("--target-phase").equals("abstr"))
@@ -175,9 +179,12 @@ public class Compiler {
 					Abstr.tree.accept(new AddrResolver(), AddrResolver.Mode.FIRST);
 					Abstr.tree.accept(new AddrResolver(), AddrResolver.Mode.SECOND);
 
+					/*
 					AbsLogger logger = new AbsLogger(seman.logger);
 					logger.addSubvisitor(new SemLogger(seman.logger));
 					Abstr.tree.accept(logger, "Decls");
+
+					 */
 				}
 				if(DEBUG) System.out.println("Semantic analysis done.");
 				if (Compiler.cmdLineArgValue("--target-phase").equals("seman"))
@@ -189,10 +196,13 @@ public class Compiler {
 					Abstr.tree.accept(me, MemEvaluator.Mode.FIRST);
 					Abstr.tree.accept(me, MemEvaluator.Mode.GLOBAL_VARIABLES);
 
+					/*
 					AbsLogger logger = new AbsLogger(memory.logger);
 					logger.addSubvisitor(new SemLogger(memory.logger));
 					logger.addSubvisitor(new MemLogger(memory.logger));
 					Abstr.tree.accept(logger, "Decls");
+
+					 */
 				}
 				if(DEBUG) System.out.println("Memory layout done.");
 				if (Compiler.cmdLineArgValue("--target-phase").equals("memory"))
@@ -201,11 +211,14 @@ public class Compiler {
 				// Intermediate code generation.
 				try (ImcGen imcgen = new ImcGen()) {
 					Abstr.tree.accept(new CodeGenerator(), new Stack<MemFrame>());
+
+					/*
 					AbsLogger logger = new AbsLogger(imcgen.logger);
 					logger.addSubvisitor(new SemLogger(imcgen.logger));
 					logger.addSubvisitor(new MemLogger(imcgen.logger));
 					logger.addSubvisitor(new ImcLogger(imcgen.logger));
 					Abstr.tree.accept(logger, "Decls");
+					 */
 				}
 				if(DEBUG) System.out.println("Intermediate code generator done.");
 				if (Compiler.cmdLineArgValue("--target-phase").equals("imcgen"))
@@ -229,7 +242,7 @@ public class Compiler {
 					asmgen.log();
 				}
 				if(DEBUG) System.out.println("Machine code generator done.");
-				if (Compiler.cmdLineArgValue("--target-phase").equals("amsgen"))
+				if (Compiler.cmdLineArgValue("--target-phase").equals("asmgen"))
 					break;
 
 				// Liveness analysis.
@@ -254,7 +267,7 @@ public class Compiler {
 				outFile.createMMIXProgram();
 				outFile.writeProgram();
 
-				if(DEBUG)
+				//if(DEBUG)
 					//outFile.printProgram();
 
 				break;
