@@ -34,7 +34,7 @@ public class Compiler {
 
 	public static int REGISTERS = 8;
 	private static boolean DEBUG = true;
-	private static boolean LOG = false;
+	private static boolean LOG = true;
 
 	/**
 	 * Returns the value of a command line argument.

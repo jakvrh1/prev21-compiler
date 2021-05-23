@@ -25,34 +25,6 @@ public class OutFile {
     public OutFile() {
     }
 
-    // _putChar implementation
-    private String _putChar() {
-        return "\t\tLDO Temp,$253,8\n"      + // read char value
-                "\t\tLDA $255,OutBuf\n"     + // read OutBuffer address
-                "\t\tSTB Temp,$255,0\n"     + // store
-                "\t\tTRAP 0,Fputs,StdOut\n";
-    }
-
-    // _getChar implementation
-    private String _getChar() {
-        return "\t\tLDA $255,InArg\n"       + // read address
-               "\t\tTRAP 0,Fgets,StdIn\n";//   + // read char from input
-               //"\t\tLDA $253,InBuf\n";      // store char in return address
-    }
-
-    // _new implementation
-    private String _new() {
-        return  "\t\tLDO new,new,0\n"       + // read new value
-                "\t\tSTO new,$253,0\n"      + // store new value to return address
-                "\t\tLDO temp,$253,8\n"     + // read ( new(a) ) a value
-                "\t\tADD new,new,temp\n";     // new = new + a
-    }
-
-    // _del implementation
-    private String _del() {
-        return "\t\tSWYM";
-    }
-
     private void addStaticData(LinDataChunk ldc) {
         if (ldc.init == null) {
             mmix.add(ldc.label.name + "\t\tOCTA");
@@ -174,42 +146,8 @@ public class OutFile {
                 if (prevInstr instanceof AsmLABEL)
                     line = ((AsmLABEL) prevInstr).label.name;
 
-                String temp = "\t\t" + crntInstr.toString(RegAll.tempToReg);
-
-                // INTERNAL FUNCTIONS
-
-                if (temp.contains("_putChar")) {
-                    mmix.add("\n\t\t# PUTCHAR");
-                    line += _putChar();
-                } else if(temp.contains("_new")) {
-                    System.out.println("NEW");
-                    mmix.add("\n\t\t# NEW");
-                    line += _new();
-                } else if(temp.contains("_getChar")) {
-                    mmix.add("\n\t\t# GETCHAR");
-                    line += _getChar();
-                } else if(temp.contains("_del")) {
-                    mmix.add("\n\t\t# DEL");
-                    line += _del();
-                }
-                else {
-                    line += temp;
-                }
-
-                // next would be LDO but we need LDB for char
-                if(wasPrevGetChar && line.contains("LDO")) {
-                    int t = line.indexOf(",");
-                    line = line.substring(0, t + 1);
-                    line = line.replaceAll("LDO", "LDB");
-                    line += "InBuf";
-                    wasPrevGetChar = false;
-                }
-
+                line += "\t\t" + crntInstr.toString(RegAll.tempToReg);
                 mmix.add(line);
-
-                if(temp.contains("_getChar")) {
-                    wasPrevGetChar = true;
-                }
             }
 
             epilogue(code);
@@ -233,6 +171,10 @@ public class OutFile {
         mmix.add("\t\tLOC #100\n");
         callMain();
         code();
+
+        mmix.add("# INTEGRATED FUNCTIONS");
+        IntegratedFunctions.inject(mmix);
+
         //System.out.println(String.format("%x", DATA_SEGMENT));
     }
 

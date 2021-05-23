@@ -80,13 +80,27 @@ public class ExprGenerator implements AstVisitor<ImcExpr, Stack<MemFrame>> {
                 return null;
             // EX7
             case NEW:
+                MemLabel newL = new MemLabel("new");
+                offs.add(0L);
+                args.add(new ImcCONST(0));
+
+                ImcExpr ie = ImcGen.exprImc.get(pfxExpr.expr);
+                offs.add(8L);
+                args.add(ie);
+
+                ImcGen.exprImc.put(pfxExpr, new ImcCALL(newL, offs, args));
+                return null;
                 // EX8
             case DEL:
-                MemLabel newL = new MemLabel();
+                MemLabel delL = new MemLabel("del");
                 offs.add(0L);
+                args.add(new ImcCONST(0));
+
+                ImcExpr ie1 = ImcGen.exprImc.get(pfxExpr.expr);
                 offs.add(8L);
-                args.add(e);
-                ImcGen.exprImc.put(pfxExpr, new ImcCALL(newL, offs, args));
+                args.add(ie1);
+
+                ImcGen.exprImc.put(pfxExpr, new ImcCALL(delL, offs, args));
                 return null;
 
             //new ImcCALL(delL, offs, args);
