@@ -25,53 +25,44 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
         instr.add("`s1");
 
         if (binOp.oper == ImcBINOP.Oper.LTH) {
-            instr.set(0, "SUB");
-            MemTemp sub_mt = addInstruction(instr, binOp, visArg);
+            instr.set(0, "CMP");
+            MemTemp equ_mt = addInstruction(instr, binOp, visArg);
 
-            uses.add(sub_mt);
-            defs.add(sub_mt);
+            uses.add(equ_mt);
+            defs.add(equ_mt);
 
-            visArg.add(new AsmOPER("NEG `d0,`s0", uses, defs, null));
+            visArg.add(new AsmOPER("ZSN `d0,`s0,1", uses, defs, null));
 
             return defs.lastElement();
         } else if (binOp.oper == ImcBINOP.Oper.GTH) {
-            instr.set(0, "SUB");
-            return addInstruction(instr, binOp, visArg);
+            instr.set(0, "CMP");
+            MemTemp equ_mt = addInstruction(instr, binOp, visArg);
+
+            uses.add(equ_mt);
+            defs.add(equ_mt);
+
+            visArg.add(new AsmOPER("ZSP `d0,`s0,1", uses, defs, null));
+
+            return defs.lastElement();
         } else if (binOp.oper == ImcBINOP.Oper.LEQ) {
-            instr.set(0, "SUB");
-            MemTemp sub_mt = addInstruction(instr, binOp, visArg);
+            instr.set(0, "CMP");
+            MemTemp equ_mt = addInstruction(instr, binOp, visArg);
 
-            uses.add(sub_mt);
-            defs.add(new MemTemp());
+            uses.add(equ_mt);
+            defs.add(equ_mt);
 
-            visArg.add(new AsmOPER("CMP `d0,`s0,1", uses, defs, null));
-            MemTemp cmp_mt = defs.lastElement();
-
-            uses = new Vector<>();
-            defs = new Vector<>();
-
-            uses.add(cmp_mt);
-            defs.add(cmp_mt);
-
-            visArg.add(new AsmOPER("NEG `d0,`s0", uses, defs, null));
-
-            /*uses.add(cmp_mt);
-            uses.add(createConstant(-1, visArg));
-            defs.add(new MemTemp());
-
-            visArg.add(new AsmOPER("MUL `d0,`s0,`s1", uses, defs, null));
-             */
+            visArg.add(new AsmOPER("ZSNP `d0,`s0,1", uses, defs, null));
 
             return defs.lastElement();
         } else if (binOp.oper == ImcBINOP.Oper.GEQ) {
-            instr.set(0, "SUB");
-            MemTemp cmp_mt = addInstruction(instr, binOp, visArg);
+            instr.set(0, "CMP");
+            MemTemp equ_mt = addInstruction(instr, binOp, visArg);
 
-            uses.add(cmp_mt);
-            uses.add(createConstant(-1, visArg));
-            defs.add(new MemTemp());
+            uses.add(equ_mt);
+            defs.add(equ_mt);
 
-            visArg.add(new AsmOPER("CMP `d0,`s0,`s1", uses, defs, null));
+            visArg.add(new AsmOPER("ZSNN `d0,`s0,1", uses, defs, null));
+
             return defs.lastElement();
         } else if (binOp.oper == ImcBINOP.Oper.MOD) {
             instr.set(0, "DIV");
@@ -178,9 +169,7 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
             uses.add(call.args.get(i).accept(this, visArg));
             visArg.add(new AsmOPER("STO `s0,$253," + call.offs.get(i), uses, null, null));
         }
-        //MemTemp x = createConstant(call.args.size(), visArg);
-        //uses.add(x);
-        //visArg.add(new AsmOPER("PUSHJ `s0, " + call.label.name, null, null, null));
+
         visArg.add(new AsmOPER("PUSHJ $" + Compiler.REGISTERS + "," + call.label.name, null, null, null));
 
         Vector<MemTemp> defs = new Vector<>();
@@ -198,7 +187,6 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
         MemTemp mt = mem.addr.accept(this, visArg);
         if (FLAG) return mt;
 
-
         Vector<MemTemp> uses = new Vector<>();
         Vector<MemTemp> defs = new Vector<>();
         uses.add(mt);
@@ -214,7 +202,6 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
         Vector<MemTemp> defs = new Vector<>();
         defs.add(new MemTemp());
         visArg.add(new AsmOPER("LDA `d0," + name.label.name, null, defs, null));
-        //visArg.add(new AsmOPER("LDO `d0,`s0,0", defs, defs, null));
 
         return defs.lastElement();
     }

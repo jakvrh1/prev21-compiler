@@ -46,7 +46,7 @@ public class LiveAn extends Phase {
                 if (instr == instrs.size() - 1)
                     break;
 
-                if (!ai.jumps().isEmpty()) {
+                if (!ai.jumps().isEmpty() && !ai.instr().contains("PUSHJ")) {
                     for (MemLabel ml : ai.jumps()) {
                         if (jls.get(ml) != null)
                             newOut.addAll(jls.get(ml).in());

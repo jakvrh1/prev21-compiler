@@ -7,9 +7,7 @@ import prev.data.mem.MemTemp;
 import prev.phase.Phase;
 import prev.phase.asmgen.AsmGen;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * Register allocation.
@@ -51,10 +49,14 @@ public class RegAll extends Phase {
                 for (MemTemp j : instr.in())
                     if (i != j) G.get(i).add(j);
             }
-            for (MemTemp i : instr.out()) {
+
+            Set<MemTemp> outs = instr.out();
+            outs.addAll(instr.defs());
+
+            for (MemTemp i : outs) {
                 if (!G.containsKey(i))
                     G.put(i, new HashSet<>());
-                for (MemTemp j : instr.out())
+                for (MemTemp j : outs)
                     if (i != j) G.get(i).add(j);
             }
         }
@@ -63,7 +65,7 @@ public class RegAll extends Phase {
     }
 
     public void allocate() {
-		/*
+        /*
 		for(Code code : AsmGen.codes) {
 			var G = codeGraph(code);
 			for(MemTemp key : G.keySet()) {
@@ -75,7 +77,7 @@ public class RegAll extends Phase {
 			}
 			System.out.println();
 		}
-		 */
+         */
 
         for (Code code : AsmGen.codes) {
             var G = codeGraph(code);
@@ -122,6 +124,10 @@ public class RegAll extends Phase {
                     if (tempToReg.containsKey(a) && tempToReg.get(a) != FP_REGISTER)
                         usedNums[tempToReg.get(a)] = true;
                 }
+
+                //System.out.println("Barvam " + t.toString());
+                //System.out.println(Arrays.toString(usedNums));
+
                 boolean isSpill = s;
                 for (int i = 0; i < REGISTERS; ++i) {
                     if (!usedNums[i]) {

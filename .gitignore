@@ -4,6 +4,7 @@ bin/*
 gen/*
 
 prg/old_tests/*.p21
+prg/old_tests1/*.p21
 prg/*.p21
 prg/*.mmo
 prg/*.mms

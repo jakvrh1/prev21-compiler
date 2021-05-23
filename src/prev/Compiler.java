@@ -33,7 +33,7 @@ public class Compiler {
 	private static HashMap<String, String> cmdLine = new HashMap<String, String>();
 
 	public static int REGISTERS = 8;
-	private static boolean DEBUG = true;
+	private static boolean DEBUG = false;
 	private static boolean LOG = true;
 
 	/**

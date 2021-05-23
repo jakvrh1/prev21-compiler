@@ -17,9 +17,8 @@ import java.util.LinkedList;
 public class OutFile {
     // MMIX instructions line by line
     public LinkedList<String> mmix = new LinkedList<>();
-    public String FILE_NAME = "out.mms";
 
-    private final int STACK_SIZE = 1; // used with SETH
+    private final int STACK_SIZE = 10; // used with SETH
     private long DATA_SEGMENT = 0x2000000000000000L;
 
     public OutFile() {
@@ -35,18 +34,18 @@ public class OutFile {
 
         if (ldc.size > 8) {
             DATA_SEGMENT += ldc.size;
-            mmix.add(String.format("\t\tLOC #%x", DATA_SEGMENT));
+            mmix.add(String.format("\t\t\tLOC #%x", DATA_SEGMENT));
         }
     }
 
     private void dataChunks() {
-        mmix.add(String.format("\t\tLOC #%x", DATA_SEGMENT));
+        mmix.add(String.format("\t\t\tLOC #%x", DATA_SEGMENT));
 
-        mmix.add("\t\tGREG @");
-        mmix.add("OutBuf\tBYTE");
-        mmix.add("OutEnd\tBYTE 0");
-        mmix.add("InBuf\tBYTE 0");
-        mmix.add("InArg\tOCTA InBuf,8");
+        mmix.add("\t\t\tGREG @");
+        mmix.add("OutBuf\t\tBYTE");
+        mmix.add("OutEnd\t\tBYTE 0");
+        mmix.add("InBuf\t\tBYTE 0");
+        mmix.add("InArg\t\tOCTA InBuf,8");
 
         long prev_data = DATA_SEGMENT;
         DATA_SEGMENT += 16 + 16;
@@ -55,7 +54,7 @@ public class OutFile {
             addStaticData(ldc);
             // We need to add dynamic register for address calculation
             if (DATA_SEGMENT - prev_data > 255) {
-                mmix.add("\t\tGREG @");
+                mmix.add("\t\t\tGREG @");
                 prev_data = DATA_SEGMENT;
             }
         }
@@ -71,55 +70,55 @@ public class OutFile {
 
         storeConstant(0, oldFPOffset, code);
 
-        mmix.add("\t\tSUB $253,$253,$0"); // go to the location where old FP is stored
+        mmix.add("\t\t\tSUB $253,$253,$0"); // go to the location where old FP is stored
 
-        mmix.add("\t\tSTO $254,$253,0");              // store the current FP at this location
-        mmix.add("\t\tSUB $253,$253,8");              // go one octa futher down (RA)
-        mmix.add("\t\tGET $254,rJ");                   // store the return address in FP (RA)
-        mmix.add("\t\tSTO $254,$253,0");              // save the return address in the frame
-        mmix.add("\t\tADD $253,$253,8");              // go one octa back up
+        mmix.add("\t\t\tSTO $254,$253,0");              // store the current FP at this location
+        mmix.add("\t\t\tSUB $253,$253,8");              // go one octa futher down (RA)
+        mmix.add("\t\t\tGET $254,rJ");                   // store the return address in FP (RA)
+        mmix.add("\t\t\tSTO $254,$253,0");              // save the return address in the frame
+        mmix.add("\t\t\tADD $253,$253,8");              // go one octa back up
 
-        mmix.add("\t\tADD $253,$253,$0"); // go back to the old SP
-        mmix.add("\t\tOR $254,$253,0");               // set the new FP to be the old SP
+        mmix.add("\t\t\tADD $253,$253,$0"); // go back to the old SP
+        mmix.add("\t\t\tOR $254,$253,0");               // set the new FP to be the old SP
 
         storeConstant(1, code.frame.size, null);
 
-        mmix.add("\t\tSUB $253,$253,$1"); // move SP by the stack frame size
+        mmix.add("\t\t\tSUB $253,$253,$1"); // move SP by the stack frame size
 
-        mmix.add("\t\tJMP " + code.entryLabel.name);   // go to the actual function
+        mmix.add("\t\t\tJMP " + code.entryLabel.name);   // go to the actual function
     }
 
     private void storeConstant(int reg, long value, Code code) {
         if (code != null)
-            mmix.add(code.frame.label.name + "\t\tSETL $" + reg + "," + (value & 0x000000000000FFFFL));
+            mmix.add(code.frame.label.name + "\t\t\tSETL $" + reg + "," + (value & 0x000000000000FFFFL));
         else
-            mmix.add("\t\tSETL $" + reg + "," + (value & 0x000000000000FFFFL));
+            mmix.add("\t\t\tSETL $" + reg + "," + (value & 0x000000000000FFFFL));
 
         if ((value & 0x00000000FFFF0000L) > 0)
-            mmix.add("\t\tINCML $" + reg + "," + ((value & 0x00000000FFFF0000L) >> 4 * 4));
+            mmix.add("\t\t\tINCML $" + reg + "," + ((value & 0x00000000FFFF0000L) >> 4 * 4));
         if ((value & 0x0000FFFF00000000L) > 0)
-            mmix.add("\t\tINCMH $" + reg + "," + ((value & 0x0000FFFF00000000L) >> 8 * 4));
+            mmix.add("\t\t\tINCMH $" + reg + "," + ((value & 0x0000FFFF00000000L) >> 8 * 4));
         if ((value & 0xFFFF000000000000L) > 0)
-            mmix.add("\t\tINCH $" + reg + "," + ((value & 0xFFFF000000000000L) >> 12 * 4));
+            mmix.add("\t\t\tINCH $" + reg + "," + ((value & 0xFFFF000000000000L) >> 12 * 4));
     }
 
     private void epilogue(Code code) {
         mmix.add("# Epilogue");
 
         long oldFPOffset = code.frame.locsSize + 8;
-        mmix.add(code.exitLabel.name + "\t\tSTO $" + RegAll.tempToReg.get(code.frame.RV) + ",$254,0");
+        mmix.add(code.exitLabel.name + "\t\t\tSTO $" + RegAll.tempToReg.get(code.frame.RV) + ",$254,0");
 
-        mmix.add("\t\tOR $253,$254,0"); // set new SP to be old FP
+        mmix.add("\t\t\tOR $253,$254,0"); // set new SP to be old FP
 
         storeConstant(0, oldFPOffset, null);
-        mmix.add("\t\tSUB $0,$254,$0"); // old FP address
+        mmix.add("\t\t\tSUB $0,$254,$0"); // old FP address
 
-        mmix.add("\t\tSUB $1,$0,8"); // RA address
-        mmix.add("\t\tLDO $1,$1,0"); // RA value
-        mmix.add("\t\tPUT rJ,$1"); // put
+        mmix.add("\t\t\tSUB $1,$0,8"); // RA address
+        mmix.add("\t\t\tLDO $1,$1,0"); // RA value
+        mmix.add("\t\t\tPUT rJ,$1"); // put
 
-        mmix.add("\t\tLDO $254,$0,0"); // set new FP
-        mmix.add("\t\tPOP 0,0");
+        mmix.add("\t\t\tLDO $254,$0,0"); // set new FP
+        mmix.add("\t\t\tPOP 0,0");
     }
 
     private void code() {
@@ -136,7 +135,7 @@ public class OutFile {
 
                 if (prevInstr instanceof AsmLABEL && crntInstr instanceof AsmLABEL) {
                     line = ((AsmLABEL) prevInstr).label.name;
-                    line += "\t\tSWYM";
+                    line += "\t\t\tSWYM";
                     mmix.add(line);
                     continue;
                 }
@@ -146,7 +145,7 @@ public class OutFile {
                 if (prevInstr instanceof AsmLABEL)
                     line = ((AsmLABEL) prevInstr).label.name;
 
-                line += "\t\t" + crntInstr.toString(RegAll.tempToReg);
+                line += "\t\t\t" + crntInstr.toString(RegAll.tempToReg);
                 mmix.add(line);
             }
 
@@ -156,10 +155,10 @@ public class OutFile {
 
     public void setStack() {
         //mmix.add("\t\tLOC Stack_Segment");
-        mmix.add("FP\t\tGREG ");
-        mmix.add("SP\t\tGREG ");
-        mmix.add("new\t\tGREG ");
-        mmix.add("Temp\tGREG\n");
+        mmix.add("FP\t\t\tGREG ");
+        mmix.add("SP\t\t\tGREG ");
+        mmix.add("new\t\t\tGREG ");
+        mmix.add("Temp\t\tGREG\n");
     }
 
     public void createMMIXProgram() {
@@ -168,23 +167,23 @@ public class OutFile {
         mmix.add("# STATIC DATA");
         dataChunks();
         mmix.add("\n# CODE");
-        mmix.add("\t\tLOC #100\n");
+        mmix.add("\t\t\tLOC #100\n");
         callMain();
         code();
 
-        mmix.add("# INTEGRATED FUNCTIONS");
+        mmix.add("\n# INTEGRATED FUNCTIONS");
         IntegratedFunctions.inject(mmix);
 
         //System.out.println(String.format("%x", DATA_SEGMENT));
     }
 
     private void callMain() {
-        mmix.add("Main\tSETMH FP," + STACK_SIZE);
-        mmix.add("\t\tSETMH SP," + STACK_SIZE);
-        mmix.add("\t\tSETMH new," + (STACK_SIZE + 1));
-        mmix.add("\t\tSETMH Temp," + (STACK_SIZE + 2));
-        mmix.add("\t\tPUSHJ $" + Compiler.REGISTERS + ",_main");
-        mmix.add("\t\tTRAP 0,Halt,0");
+        mmix.add("Main\t\tSETMH FP," + STACK_SIZE);
+        mmix.add("\t\t\tSETMH SP," + STACK_SIZE);
+        mmix.add("\t\t\tSETMH Temp," + (STACK_SIZE + 1));
+        mmix.add("\t\t\tSETMH new," + (STACK_SIZE + 2));
+        mmix.add("\t\t\tPUSHJ $" + Compiler.REGISTERS + ",_main");
+        mmix.add("\t\t\tTRAP 0,Halt,0");
     }
 
     public void printProgram() {
@@ -195,14 +194,14 @@ public class OutFile {
 
     public void writeProgram() {
         try {
-            File file = new File(FILE_NAME);
+            File file = new File(Compiler.cmdLineArgValue("--dst-file-name"));
             file.createNewFile();
 
             FileWriter fw = new FileWriter(file);
 
             for (String line : mmix) {
-                //line = line.replaceAll("\\$254", "fp");
-                //line = line.replaceAll("\\$253", "sp");
+                line = line.replaceAll("\\$254", "FP");
+                line = line.replaceAll("\\$253", "SP");
                 fw.write(line + "\n");
             }
 

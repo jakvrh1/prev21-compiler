@@ -31,10 +31,10 @@ public class IntegratedFunctions {
     static public Vector<AsmInstr> _new() {
         Vector<AsmInstr> instrs = new Vector<>();
 
-        instrs.add(new AsmOPER("_new\tSTO new,SP,0", null, null, null));
-        instrs.add(new AsmOPER("\t\tLDO $0,SP,8", null, null, null));
-        instrs.add(new AsmOPER("\t\tADD new,new,$0", null, null, null));
-        instrs.add(new AsmOPER("\t\tPOP 0,0", null, null, null));
+        instrs.add(new AsmOPER("_new\t\tSTO new,SP,0", null, null, null));
+        instrs.add(new AsmOPER("\t\t\tLDO $0,SP,8", null, null, null));
+        instrs.add(new AsmOPER("\t\t\tADD new,new,$0", null, null, null));
+        instrs.add(new AsmOPER("\t\t\tPOP 0,0\n", null, null, null));
 
         return instrs;
     }
@@ -43,11 +43,11 @@ public class IntegratedFunctions {
         Vector<AsmInstr> instrs = new Vector<>();
 
         instrs.add(new AsmOPER("_putChar\tLDA $255,OutBuf", null, null, null));
-        instrs.add(new AsmOPER("\t\tLDO $0,SP,8", null, null, null));
-        instrs.add(new AsmOPER("\t\tSTB $0,$255,0", null, null, null));
-        instrs.add(new AsmOPER("\t\tTRAP 0,Fputs,StdOut", null, null, null));
-        instrs.add(new AsmOPER("\t\tSTO $255,SP,0", null, null, null));
-        instrs.add(new AsmOPER("\t\tPOP 0,0", null, null, null));
+        instrs.add(new AsmOPER("\t\t\tLDO $0,SP,8", null, null, null));
+        instrs.add(new AsmOPER("\t\t\tSTB $0,$255,0", null, null, null));
+        instrs.add(new AsmOPER("\t\t\tTRAP 0,Fputs,StdOut", null, null, null));
+        instrs.add(new AsmOPER("\t\t\tSTO $255,SP,0", null, null, null));
+        instrs.add(new AsmOPER("\t\t\tPOP 0,0\n", null, null, null));
 
         return instrs;
     }
@@ -56,10 +56,10 @@ public class IntegratedFunctions {
         Vector<AsmInstr> instrs = new Vector<>();
 
         instrs.add(new AsmOPER("_getChar\tLDA $255,InArg", null, null, null));
-        instrs.add(new AsmOPER("\t\tTRAP 0,Fgets,StdIn", null, null, null));
-        instrs.add(new AsmOPER("\t\tLDB $0,InBuf", null, null, null));
-        instrs.add(new AsmOPER("\t\tSTO $0,SP,0", null, null, null));
-        instrs.add(new AsmOPER("\t\tPOP 0,0", null, null, null));
+        instrs.add(new AsmOPER("\t\t\tTRAP 0,Fgets,StdIn", null, null, null));
+        instrs.add(new AsmOPER("\t\t\tLDB $0,InBuf", null, null, null));
+        instrs.add(new AsmOPER("\t\t\tSTO $0,SP,0", null, null, null));
+        instrs.add(new AsmOPER("\t\t\tPOP 0,0\n", null, null, null));
 
         return instrs;
     }
@@ -67,7 +67,7 @@ public class IntegratedFunctions {
     static public Vector<AsmInstr> _del() {
         Vector<AsmInstr> instrs = new Vector<>();
 
-        instrs.add(new AsmOPER("_del\tPOP 0,0", null, null, null));
+        instrs.add(new AsmOPER("_del\t\tPOP 0,0\n", null, null, null));
 
         return instrs;
     }
@@ -75,7 +75,7 @@ public class IntegratedFunctions {
     static public Vector<AsmInstr> _exit() {
         Vector<AsmInstr> instrs = new Vector<>();
 
-        instrs.add(new AsmOPER("_exit\tTRAP 0,Halt,0", null, null, null));
+        instrs.add(new AsmOPER("_exit\t\tTRAP 0,Halt,0", null, null, null));
 
         return instrs;
     }

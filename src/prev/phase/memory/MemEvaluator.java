@@ -6,6 +6,7 @@ import prev.data.ast.tree.decl.AstVarDecl;
 import prev.data.ast.tree.expr.AstAtomExpr;
 import prev.data.ast.tree.expr.AstCallExpr;
 import prev.data.ast.tree.expr.AstExpr;
+import prev.data.ast.tree.expr.AstPfxExpr;
 import prev.data.ast.tree.type.AstRecType;
 import prev.data.ast.visitor.AstFullVisitor;
 import prev.data.mem.*;
@@ -47,7 +48,12 @@ public class MemEvaluator extends AstFullVisitor<Object, MemEvaluator.Mode> {
         if (depth == 0) ml = new MemLabel(funDecl.name);
         else ml = new MemLabel();
 
-        MemFrame frame = new MemFrame(ml, depth, list.get(depth).locSize, list.get(depth).argSize);
+        MemFrame frame = null;
+        if(list.get(depth).newDel) {
+            frame = new MemFrame(ml, depth, list.get(depth).locSize, Math.max(list.get(depth).argSize, 16));
+        } else
+            frame = new MemFrame(ml, depth, list.get(depth).locSize, list.get(depth).argSize);
+
         Memory.frames.put(funDecl, frame);
 
         //Report.info(funDecl, funDecl.name + " down " + depth);
@@ -149,11 +155,23 @@ public class MemEvaluator extends AstFullVisitor<Object, MemEvaluator.Mode> {
         return null;
     }
 
+    @Override
+    public Object visit(AstPfxExpr pfxExpr, Mode mode) {
+        super.visit(pfxExpr, mode);
+        if (mode == Mode.FUNCTION_SEEKING) {
+            if(pfxExpr.oper == AstPfxExpr.Oper.NEW || pfxExpr.oper == AstPfxExpr.Oper.DEL) {
+                list.get(depth).newDel = true;
+            }
+        }
+        return null;
+    }
+
     public enum Mode {
         FIRST, FUNCTION_SEEKING, GLOBAL_VARIABLES
     }
 
     public class FunVars {
+        public boolean newDel = false;
         public long parSize = 0;
         public long locSize = 0;
         public long argSize = 0;
