@@ -20,6 +20,7 @@ public class OutFile {
     public LinkedList<String> mmix = new LinkedList<>();
     public String FILE_NAME = "out.mms";
     private int STACK_SIZE = 1; // used with SETH
+    private long DATA_SEGMENT = 0x2000000000000000L;
 
     public OutFile() {
     }
@@ -33,16 +34,32 @@ public class OutFile {
             mmix.add(ldc.label.name + "\t\tOCTA");
         } else {
             mmix.add(ldc.label.name + "\t\tOCTA " + ldc.init + ",0");
+            DATA_SEGMENT += 8;
+        }
+
+        if(ldc.size > 8) {
+            DATA_SEGMENT += ldc.size;
+            //mmix.add("\t\tLOC #" + DATA_SEGMENT);
+            mmix.add(String.format("\t\tLOC #%x", DATA_SEGMENT));
         }
     }
 
     private void dataChunks() {
-        mmix.add("\t\tLOC Data_Segment");
+        mmix.add(String.format("\t\tLOC #%x", DATA_SEGMENT));
+        //mmix.add("\t\tLOC #" + DATA_SEGMENT);
         mmix.add("\t\tGREG @");
         mmix.add("OutBuffer\tBYTE");
         mmix.add("\t\tBYTE 0");
+
+        long prev_data = DATA_SEGMENT;
+        DATA_SEGMENT += 16;
+
         for(LinDataChunk ldc : ImcLin.dataChunks()) {
             addStaticData(ldc);
+            if(DATA_SEGMENT - prev_data > 255) {
+                mmix.add("\t\tGREG @");
+                prev_data = DATA_SEGMENT;
+            }
         }
     }
 
@@ -190,11 +207,15 @@ public class OutFile {
     }
 
     public void createMMIXProgram() {
+        mmix.add("# STACK and TEMPS");
         setStack();
+        mmix.add("# STATIC DATA");
         dataChunks();
-        mmix.add("\n\t\tLOC #100\n");
+        mmix.add("\n# CODE");
+        mmix.add("\t\tLOC #100\n");
         callMain();
         code();
+        //System.out.println(String.format("%x", DATA_SEGMENT));
     }
 
     private void callMain() {

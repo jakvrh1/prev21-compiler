@@ -34,6 +34,7 @@ public class Compiler {
 
 	public static int REGISTERS = 8;
 	private static boolean DEBUG = true;
+	private static boolean LOG = false;
 
 	/**
 	 * Returns the value of a command line argument.
@@ -140,7 +141,8 @@ public class Compiler {
 				// Syntax analysis
 				try (LexAn lexan = new LexAn(); SynAn synan = new SynAn(lexan)) {
 					SynAn.tree = synan.parser.source();
-					synan.log(SynAn.tree);
+					if(LOG)
+						synan.log(SynAn.tree);
 				}
 				if(DEBUG) System.out.println("Syntax analysis done.");
 				if(Compiler.cmdLineArgValue("--target-phase").equals("synan"))
@@ -150,6 +152,10 @@ public class Compiler {
 				try (Abstr abstr = new Abstr()) {
 					Abstr.tree = SynAn.tree.ast;
 
+					if(LOG) {
+						AbsLogger logger = new AbsLogger(abstr.logger);
+						Abstr.tree.accept(logger, "Decls");
+					}
 					/*
 					AbsLogger logger = new AbsLogger(abstr.logger);
 					Abstr.tree.accept(logger, "Decls");
@@ -179,6 +185,11 @@ public class Compiler {
 					Abstr.tree.accept(new AddrResolver(), AddrResolver.Mode.FIRST);
 					Abstr.tree.accept(new AddrResolver(), AddrResolver.Mode.SECOND);
 
+					if(LOG) {
+						AbsLogger logger = new AbsLogger(seman.logger);
+						logger.addSubvisitor(new SemLogger(seman.logger));
+						Abstr.tree.accept(logger, "Decls");
+					}
 					/*
 					AbsLogger logger = new AbsLogger(seman.logger);
 					logger.addSubvisitor(new SemLogger(seman.logger));
@@ -196,6 +207,12 @@ public class Compiler {
 					Abstr.tree.accept(me, MemEvaluator.Mode.FIRST);
 					Abstr.tree.accept(me, MemEvaluator.Mode.GLOBAL_VARIABLES);
 
+					if(LOG) {
+						AbsLogger logger = new AbsLogger(memory.logger);
+						logger.addSubvisitor(new SemLogger(memory.logger));
+						logger.addSubvisitor(new MemLogger(memory.logger));
+						Abstr.tree.accept(logger, "Decls");
+					}
 					/*
 					AbsLogger logger = new AbsLogger(memory.logger);
 					logger.addSubvisitor(new SemLogger(memory.logger));
@@ -212,6 +229,13 @@ public class Compiler {
 				try (ImcGen imcgen = new ImcGen()) {
 					Abstr.tree.accept(new CodeGenerator(), new Stack<MemFrame>());
 
+					if(LOG) {
+						AbsLogger logger = new AbsLogger(imcgen.logger);
+						logger.addSubvisitor(new SemLogger(imcgen.logger));
+						logger.addSubvisitor(new MemLogger(imcgen.logger));
+						logger.addSubvisitor(new ImcLogger(imcgen.logger));
+						Abstr.tree.accept(logger, "Decls");
+					}
 					/*
 					AbsLogger logger = new AbsLogger(imcgen.logger);
 					logger.addSubvisitor(new SemLogger(imcgen.logger));
@@ -239,7 +263,8 @@ public class Compiler {
 				// Machine code generation.
 				try (AsmGen asmgen = new AsmGen()) {
 					asmgen.genAsmCodes();
-					asmgen.log();
+					if(LOG)
+						asmgen.log();
 				}
 				if(DEBUG) System.out.println("Machine code generator done.");
 				if (Compiler.cmdLineArgValue("--target-phase").equals("asmgen"))
@@ -248,7 +273,8 @@ public class Compiler {
 				// Liveness analysis.
 				try (LiveAn livean = new LiveAn()) {
 					livean.analysis();
-					livean.log();
+					if(LOG)
+						livean.log();
 				}
 				if(DEBUG) System.out.println("Liveness analysis done.");
 				if (Compiler.cmdLineArgValue("--target-phase").equals("livean"))
@@ -257,7 +283,8 @@ public class Compiler {
 				// Register allocation.
 				try (RegAll regall = new RegAll(REGISTERS)) {
 					regall.allocate();
-					regall.log();
+					if(LOG)
+						regall.log();
 				}
 				if(DEBUG) System.out.println("Register allocation done.");
 				if (Compiler.cmdLineArgValue("--target-phase").equals("regall"))
