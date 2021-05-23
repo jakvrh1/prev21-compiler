@@ -1,7 +1,5 @@
 package prev.phase.memory;
 
-import prev.common.report.Report;
-import prev.data.ast.tree.decl.AstDecl;
 import prev.data.ast.tree.decl.AstFunDecl;
 import prev.data.ast.tree.decl.AstParDecl;
 import prev.data.ast.tree.decl.AstVarDecl;
@@ -41,12 +39,12 @@ public class MemEvaluator extends AstFullVisitor<Object, MemEvaluator.Mode> {
         list.add(new FunVars());
         ++depth;
 
-        if(funDecl.expr != null)
+        if (funDecl.expr != null)
             funDecl.expr.accept(this, Mode.FUNCTION_SEEKING);
         funDecl.pars.accept(this, Mode.FUNCTION_SEEKING);
 
         MemLabel ml;
-        if(depth == 0) ml = new MemLabel(funDecl.name);
+        if (depth == 0) ml = new MemLabel(funDecl.name);
         else ml = new MemLabel();
 
         MemFrame frame = new MemFrame(ml, depth, list.get(depth).locSize, list.get(depth).argSize);
@@ -120,7 +118,7 @@ public class MemEvaluator extends AstFullVisitor<Object, MemEvaluator.Mode> {
         if (mode == Mode.FUNCTION_SEEKING) {
             int funSize = 0;
 
-            if(callExpr.args.size() > 0)
+            if (callExpr.args.size() > 0)
                 funSize += 8;
 
             for (AstExpr ae : callExpr.args) {

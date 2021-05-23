@@ -72,8 +72,7 @@ public class StmtGenerator implements ImcVisitor<Vector<AsmInstr>, Object> {
             uses.add(move.src.accept(new ExprGenerator(), instr));
             defs.add(move.dst.accept(new ExprGenerator(), instr));
             instr.add(new AsmMOVE("SET `d0,`s0", uses, defs));
-        }
-        else if (move.dst instanceof ImcMEM) {
+        } else if (move.dst instanceof ImcMEM) {
             IS_PARENT = true;
             uses.add(move.dst.accept(new ExprGenerator(), instr));
             uses.add(move.src.accept(new ExprGenerator(), instr));

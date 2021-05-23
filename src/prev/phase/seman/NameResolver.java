@@ -44,7 +44,7 @@ public class NameResolver extends AstFullVisitor<Object, NameResolver.Mode> {
         return null;
     }
 
-	@Override
+    @Override
     public Object visit(AstFunDecl funDecl, NameResolver.Mode mode) {
         if (mode == Mode.FIRST) {
             try {

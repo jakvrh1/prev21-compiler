@@ -10,38 +10,38 @@ import java.util.Vector;
 public class Cannonical {
 
     public ImcExpr can(ImcExpr e, Vector<ImcStmt> v) {
-        if(e instanceof ImcBINOP)
+        if (e instanceof ImcBINOP)
             return binExpr((ImcBINOP) e, v);
-        if(e instanceof ImcCALL)
+        if (e instanceof ImcCALL)
             return callExpr((ImcCALL) e, v);
-        if(e instanceof ImcCONST)
+        if (e instanceof ImcCONST)
             return constExpr((ImcCONST) e, v);
-        if(e instanceof ImcMEM)
+        if (e instanceof ImcMEM)
             return memExpr((ImcMEM) e, v);
-        if(e instanceof ImcNAME)
+        if (e instanceof ImcNAME)
             return nameExpr((ImcNAME) e, v);
-        if(e instanceof ImcSEXPR)
+        if (e instanceof ImcSEXPR)
             return stmtSexpr((ImcSEXPR) e, v);
-        if(e instanceof ImcTEMP)
+        if (e instanceof ImcTEMP)
             return tempExpr((ImcTEMP) e, v);
-        if(e instanceof ImcUNOP)
+        if (e instanceof ImcUNOP)
             return unOpExpr((ImcUNOP) e, v);
 
         throw new Report.InternalError();
     }
 
     public void can(ImcStmt s, Vector<ImcStmt> v) {
-        if(s instanceof ImcCJUMP)
+        if (s instanceof ImcCJUMP)
             cjumpStmt((ImcCJUMP) s, v);
-        else if(s instanceof ImcESTMT)
+        else if (s instanceof ImcESTMT)
             eStmt((ImcESTMT) s, v);
-        else if(s instanceof ImcJUMP)
+        else if (s instanceof ImcJUMP)
             jumpStmt((ImcJUMP) s, v);
-        else if(s instanceof ImcLABEL)
+        else if (s instanceof ImcLABEL)
             labelStmt((ImcLABEL) s, v);
-        else if(s instanceof ImcMOVE)
+        else if (s instanceof ImcMOVE)
             moveStmt((ImcMOVE) s, v);
-        else if(s instanceof ImcSTMTS)
+        else if (s instanceof ImcSTMTS)
             vecStmts((ImcSTMTS) s, v);
         else
             throw new Report.InternalError();
@@ -60,9 +60,9 @@ public class Cannonical {
     private ImcExpr callExpr(ImcCALL call, Vector<ImcStmt> v) {
         Vector<ImcExpr> args = new Vector<>();
 
-        for(ImcExpr arg : call.args) {
+        for (ImcExpr arg : call.args) {
             ImcExpr e = can(arg, v);
-            if(arg instanceof ImcCALL) {
+            if (arg instanceof ImcCALL) {
                 args.add(e);
             } else {
                 ImcTEMP t = new ImcTEMP(new MemTemp());
@@ -98,13 +98,13 @@ public class Cannonical {
     }
 
     public ImcExpr stmtSexpr(ImcSEXPR stmt, Vector<ImcStmt> v) {
-       can(stmt.stmt, v);
-       return can(stmt.expr, v);
+        can(stmt.stmt, v);
+        return can(stmt.expr, v);
     }
 
     public void cjumpStmt(ImcCJUMP stmt, Vector<ImcStmt> v) {
-       ImcExpr e = can(stmt.cond, v);
-       v.add(new ImcCJUMP(e, stmt.posLabel, stmt.negLabel));
+        ImcExpr e = can(stmt.cond, v);
+        v.add(new ImcCJUMP(e, stmt.posLabel, stmt.negLabel));
     }
 
     public void eStmt(ImcESTMT stmt, Vector<ImcStmt> v) {
@@ -128,7 +128,7 @@ public class Cannonical {
     }
 
     public void vecStmts(ImcSTMTS stmt, Vector<ImcStmt> v) {
-        for(ImcStmt s : stmt.stmts)
+        for (ImcStmt s : stmt.stmts)
             can(s, v);
     }
 }

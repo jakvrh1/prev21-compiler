@@ -21,18 +21,14 @@ import prev.data.typ.SemType;
  */
 public class AddrResolver extends AstFullVisitor<Object, AddrResolver.Mode> {
 
-    public enum Mode {
-        FIRST, SECOND
-    }
-
     @Override
     public Object visit(AstAssignStmt assignStmt, Mode mode) {
         super.visit(assignStmt, mode);
 
-        if(mode == Mode.SECOND) {
-           Boolean o = SemAn.isAddr.get(assignStmt.dst);
-           if(o == null || !o)
-               throw new Report.Error(assignStmt, "Addr error: Statement on left side needs to be lvalue.");
+        if (mode == Mode.SECOND) {
+            Boolean o = SemAn.isAddr.get(assignStmt.dst);
+            if (o == null || !o)
+                throw new Report.Error(assignStmt, "Addr error: Statement on left side needs to be lvalue.");
         }
 
         return null;
@@ -41,7 +37,7 @@ public class AddrResolver extends AstFullVisitor<Object, AddrResolver.Mode> {
     @Override
     public Object visit(AstNameExpr nameExpr, Mode mode) {
         super.visit(nameExpr, mode);
-        if(mode == Mode.FIRST) {
+        if (mode == Mode.FIRST) {
             AstDecl decl = SemAn.declaredAt.get(nameExpr);
             if (decl instanceof AstVarDecl)
                 SemAn.isAddr.put(nameExpr, true);
@@ -55,7 +51,7 @@ public class AddrResolver extends AstFullVisitor<Object, AddrResolver.Mode> {
     @Override
     public Object visit(AstSfxExpr sfxExpr, Mode mode) {
         super.visit(sfxExpr, mode);
-        if(mode == Mode.FIRST) {
+        if (mode == Mode.FIRST) {
             SemType type = SemAn.ofType.get(sfxExpr.expr);
             if (type instanceof SemPtr)
                 SemAn.isAddr.put(sfxExpr, true);
@@ -67,7 +63,7 @@ public class AddrResolver extends AstFullVisitor<Object, AddrResolver.Mode> {
     @Override
     public Object visit(AstArrExpr arrExpr, Mode mode) {
         super.visit(arrExpr, mode);
-        if(mode == Mode.FIRST) {
+        if (mode == Mode.FIRST) {
             Boolean a = SemAn.isAddr.get(arrExpr.arr);
             if (a == null)
                 throw new Report.Error(arrExpr, "Addr error: isAddr returned null.");
@@ -81,7 +77,7 @@ public class AddrResolver extends AstFullVisitor<Object, AddrResolver.Mode> {
     @Override
     public Object visit(AstRecExpr recExpr, Mode mode) {
         super.visit(recExpr, mode);
-        if(mode == Mode.FIRST) {
+        if (mode == Mode.FIRST) {
             Boolean a = SemAn.isAddr.get(recExpr.rec);
             if (a == null)
                 throw new Report.Error(recExpr, "Addr error: isAddr returned null.");
@@ -90,5 +86,9 @@ public class AddrResolver extends AstFullVisitor<Object, AddrResolver.Mode> {
         }
 
         return null;
+    }
+
+    public enum Mode {
+        FIRST, SECOND
     }
 }

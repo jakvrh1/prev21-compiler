@@ -81,7 +81,7 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
             visArg.add(new AsmOPER("GET `d0,rR", null, defs, null));
 
             return defs.lastElement();
-        } else if(binOp.oper == ImcBINOP.Oper.EQU) {
+        } else if (binOp.oper == ImcBINOP.Oper.EQU) {
             instr.set(0, "CMP");
             MemTemp equ_mt = addInstruction(instr, binOp, visArg);
 
@@ -91,7 +91,7 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
             visArg.add(new AsmOPER("ZSZ `d0,`s0,1", uses, defs, null));
 
             return defs.lastElement();
-        } else if(binOp.oper == ImcBINOP.Oper.NEQ) {
+        } else if (binOp.oper == ImcBINOP.Oper.NEQ) {
             instr.set(0, "CMP");
             MemTemp equ_mt = addInstruction(instr, binOp, visArg);
 
@@ -101,8 +101,7 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
             visArg.add(new AsmOPER("ZSNZ `d0,`s0,1", uses, defs, null));
 
             return defs.lastElement();
-        }
-        else {
+        } else {
             switch (binOp.oper) {
                 case OR -> instr.set(0, "OR");
                 case AND -> instr.set(0, "AND");
@@ -132,11 +131,11 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
 
         visArg.add(new AsmOPER(String.format("SETL `d0,%d", value & 0x000000000000FFFFL), null, defs, null));
         if ((value & 0x00000000FFFF0000L) > 0)
-            visArg.add(new AsmOPER(String.format("INCML `d0,%d", ((value & 0x00000000FFFF0000L) >> 4*4)), null, defs, null));
+            visArg.add(new AsmOPER(String.format("INCML `d0,%d", ((value & 0x00000000FFFF0000L) >> 4 * 4)), null, defs, null));
         if ((value & 0x0000FFFF00000000L) > 0)
-            visArg.add(new AsmOPER(String.format("INCMH `d0,%d", ((value & 0x0000FFFF00000000L) >> 8*4)), null, defs, null));
+            visArg.add(new AsmOPER(String.format("INCMH `d0,%d", ((value & 0x0000FFFF00000000L) >> 8 * 4)), null, defs, null));
         if ((value & 0xFFFF000000000000L) > 0)
-            visArg.add(new AsmOPER(String.format("INCH `d0,%d", ((value & 0xFFFF000000000000L) >> 12*4)), null, defs, null));
+            visArg.add(new AsmOPER(String.format("INCH `d0,%d", ((value & 0xFFFF000000000000L) >> 12 * 4)), null, defs, null));
 
         if (isNegative) {
             Vector<MemTemp> uses = new Vector<>();
@@ -174,7 +173,7 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
     public MemTemp visit(ImcCALL call, Vector<AsmInstr> visArg) {
         Vector<MemTemp> uses = new Vector<>();
 
-        for(int i = 0; i < call.args.size(); ++i) {
+        for (int i = 0; i < call.args.size(); ++i) {
             uses = new Vector<>();
             uses.add(call.args.get(i).accept(this, visArg));
             visArg.add(new AsmOPER("STO `s0,$253," + call.offs.get(i), uses, null, null));
@@ -197,7 +196,7 @@ public class ExprGenerator implements ImcVisitor<MemTemp, Vector<AsmInstr>> {
         boolean FLAG = StmtGenerator.IS_PARENT;
         StmtGenerator.IS_PARENT = false;
         MemTemp mt = mem.addr.accept(this, visArg);
-        if(FLAG) return mt;
+        if (FLAG) return mt;
 
 
         Vector<MemTemp> uses = new Vector<>();

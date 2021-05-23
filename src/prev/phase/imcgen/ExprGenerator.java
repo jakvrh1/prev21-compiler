@@ -1,7 +1,5 @@
 package prev.phase.imcgen;
 
-import prev.common.report.Report;
-import prev.data.asm.AsmInstr;
 import prev.data.ast.tree.decl.*;
 import prev.data.ast.tree.expr.*;
 import prev.data.ast.tree.stmt.AstExprStmt;
@@ -37,7 +35,7 @@ public class ExprGenerator implements AstVisitor<ImcExpr, Stack<MemFrame>> {
                 break;
             case CHAR:
                 var arr = atomExpr.value.getBytes(StandardCharsets.US_ASCII);
-                if(arr.length == 3)
+                if (arr.length == 3)
                     val = arr[1];
                 else
                     val = arr[2];
@@ -75,12 +73,12 @@ public class ExprGenerator implements AstVisitor<ImcExpr, Stack<MemFrame>> {
             case SUB:
                 oper = ImcUNOP.Oper.SUB;
                 break;
-                // EX6 levi
+            // EX6 levi
             case PTR:
-                if(e instanceof ImcMEM)
-                   ImcGen.exprImc.put(pfxExpr, ((ImcMEM) e).addr);
+                if (e instanceof ImcMEM)
+                    ImcGen.exprImc.put(pfxExpr, ((ImcMEM) e).addr);
                 return null;
-                // EX7
+            // EX7
             case NEW:
                 // EX8
             case DEL:
@@ -167,23 +165,23 @@ public class ExprGenerator implements AstVisitor<ImcExpr, Stack<MemFrame>> {
     public ImcExpr visit(AstNameExpr nameExpr, Stack<MemFrame> memFrames) {
         AstDecl amd = SemAn.declaredAt.get(nameExpr);
         MemAccess ma = null;
-        if(amd instanceof AstVarDecl || amd instanceof AstParDecl)
+        if (amd instanceof AstVarDecl || amd instanceof AstParDecl)
             ma = Memory.accesses.get((AstMemDecl) amd);
 
         ImcExpr ie = null;
-        if(ma instanceof MemAbsAccess) {
+        if (ma instanceof MemAbsAccess) {
             ImcNAME in = new ImcNAME(((MemAbsAccess) ma).label);
             ie = new ImcMEM(in);
         }
-        if(ma instanceof MemRelAccess) {
-           ImcExpr ime = new ImcTEMP(memFrames.peek().FP);
-           int depthDiff = memFrames.size() - ((MemRelAccess) ma).depth - 1;
-           for(int i = 0; i < depthDiff; ++i) {
-               ime = new ImcMEM(ime);
-           }
+        if (ma instanceof MemRelAccess) {
+            ImcExpr ime = new ImcTEMP(memFrames.peek().FP);
+            int depthDiff = memFrames.size() - ((MemRelAccess) ma).depth - 1;
+            for (int i = 0; i < depthDiff; ++i) {
+                ime = new ImcMEM(ime);
+            }
 
-           ImcBINOP binop = new ImcBINOP(ImcBINOP.Oper.ADD, ime, new ImcCONST(((MemRelAccess) ma).offset));
-           ie = new ImcMEM(binop);
+            ImcBINOP binop = new ImcBINOP(ImcBINOP.Oper.ADD, ime, new ImcCONST(((MemRelAccess) ma).offset));
+            ie = new ImcMEM(binop);
         }
 
         ImcGen.exprImc.put(nameExpr, ie);
@@ -208,7 +206,7 @@ public class ExprGenerator implements AstVisitor<ImcExpr, Stack<MemFrame>> {
         SemType type = SemAn.ofType.get(arrExpr);
         ImcBINOP idx = new ImcBINOP(ImcBINOP.Oper.MUL, ieID, new ImcCONST(type.size()));
 
-        if(ie instanceof ImcMEM) {
+        if (ie instanceof ImcMEM) {
             ImcBINOP binop = new ImcBINOP(ImcBINOP.Oper.ADD, ((ImcMEM) ie).addr, idx);
             ImcGen.exprImc.put(arrExpr, new ImcMEM(binop));
         }
@@ -219,10 +217,10 @@ public class ExprGenerator implements AstVisitor<ImcExpr, Stack<MemFrame>> {
     @Override
     public ImcExpr visit(AstRecExpr recExpr, Stack<MemFrame> memFrames) {
         ImcExpr ie = ImcGen.exprImc.get(recExpr.rec);
-        if(ie instanceof ImcMEM) {
+        if (ie instanceof ImcMEM) {
             AstDecl acd = SemAn.declaredAt.get(recExpr.comp);
             MemAccess ma = Memory.accesses.get((AstMemDecl) acd);
-            if(ma instanceof MemRelAccess) {
+            if (ma instanceof MemRelAccess) {
                 ImcBINOP binop = new ImcBINOP(ImcBINOP.Oper.ADD, ((ImcMEM) ie).addr, new ImcCONST(((MemRelAccess) ma).offset));
                 ImcGen.exprImc.put(recExpr, new ImcMEM(binop));
             }
@@ -235,21 +233,21 @@ public class ExprGenerator implements AstVisitor<ImcExpr, Stack<MemFrame>> {
     public ImcExpr visit(AstCallExpr callExpr, Stack<MemFrame> memFrames) {
         AstDecl ad = SemAn.declaredAt.get(callExpr);
 
-        if(ad instanceof AstFunDecl) {
+        if (ad instanceof AstFunDecl) {
             MemFrame mf = Memory.frames.get((AstFunDecl) ad);
 
             Vector<Long> offs = new Vector<>();
             Vector<ImcExpr> args = new Vector<>();
 
             offs.add(0L);
-            if(mf == memFrames.peek())
-               args.add(new ImcMEM(new ImcTEMP(memFrames.peek().FP)));
-            else if(mf.depth == 0)
+            if (mf == memFrames.peek())
+                args.add(new ImcMEM(new ImcTEMP(memFrames.peek().FP)));
+            else if (mf.depth == 0)
                 args.add(new ImcCONST(0));
             else
                 args.add(new ImcTEMP(memFrames.peek().FP));
 
-            for(var arg: callExpr.args) {
+            for (var arg : callExpr.args) {
                 SemType type = SemAn.ofType.get(arg);
                 offs.add(type.size() + offs.lastElement());
                 args.add(ImcGen.exprImc.get(arg));
@@ -272,12 +270,12 @@ public class ExprGenerator implements AstVisitor<ImcExpr, Stack<MemFrame>> {
     public ImcExpr visit(AstStmtExpr stmtExpr, Stack<MemFrame> memFrames) {
         Vector<ImcStmt> stmts = new Vector<>();
 
-        for(int i = 0; i < stmtExpr.stmts.size() - 1; ++i)
+        for (int i = 0; i < stmtExpr.stmts.size() - 1; ++i)
             stmts.add(ImcGen.stmtImc.get(stmtExpr.stmts.get(i)));
 
         AstStmt st = stmtExpr.stmts.get(stmtExpr.stmts.size() - 1);
 
-        if(st instanceof AstExprStmt) {
+        if (st instanceof AstExprStmt) {
             ImcSEXPR sexpr = new ImcSEXPR(new ImcSTMTS(stmts), ImcGen.exprImc.get(((AstExprStmt) st).expr));
             ImcGen.exprImc.put(stmtExpr, sexpr);
         } else {
@@ -296,9 +294,9 @@ public class ExprGenerator implements AstVisitor<ImcExpr, Stack<MemFrame>> {
     public ImcExpr visit(AstCastExpr castExpr, Stack<MemFrame> memFrames) {
         SemType type = SemAn.isType.get(castExpr.type);
         ImcExpr ie = ImcGen.exprImc.get(castExpr.expr);
-        if(type.actualType() instanceof SemChar) {
-           ImcBINOP binop = new ImcBINOP(ImcBINOP.Oper.MOD, ie, new ImcCONST(256));
-           ImcGen.exprImc.put(castExpr, binop);
+        if (type.actualType() instanceof SemChar) {
+            ImcBINOP binop = new ImcBINOP(ImcBINOP.Oper.MOD, ie, new ImcCONST(256));
+            ImcGen.exprImc.put(castExpr, binop);
         } else
             ImcGen.exprImc.put(castExpr, ie);
         return null;

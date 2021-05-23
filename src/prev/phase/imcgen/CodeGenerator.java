@@ -1,17 +1,16 @@
 package prev.phase.imcgen;
 
-import java.util.*;
-
-import prev.data.ast.tree.*;
-import prev.data.ast.tree.decl.*;
+import prev.data.ast.tree.decl.AstFunDecl;
 import prev.data.ast.tree.expr.*;
 import prev.data.ast.tree.stmt.AstAssignStmt;
 import prev.data.ast.tree.stmt.AstExprStmt;
 import prev.data.ast.tree.stmt.AstIfStmt;
 import prev.data.ast.tree.stmt.AstWhileStmt;
-import prev.data.ast.visitor.*;
-import prev.data.mem.*;
-import prev.phase.memory.*;
+import prev.data.ast.visitor.AstFullVisitor;
+import prev.data.mem.MemFrame;
+import prev.phase.memory.Memory;
+
+import java.util.Stack;
 
 public class CodeGenerator extends AstFullVisitor<Object, Stack<MemFrame>> {
     public ExprGenerator eg = new ExprGenerator();

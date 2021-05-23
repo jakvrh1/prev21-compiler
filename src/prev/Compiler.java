@@ -251,7 +251,8 @@ public class Compiler {
 				// Linearization of intermediate code.
 				try (ImcLin imclin = new ImcLin()) {
 					Abstr.tree.accept(new ChunkGenerator(), null);
-					imclin.log();
+					if(LOG)
+						imclin.log();
 
 					//Interpreter interpreter = new Interpreter(ImcLin.dataChunks(), ImcLin.codeChunks());
 					//System.out.println("EXIT CODE: " + interpreter.run("_main"));

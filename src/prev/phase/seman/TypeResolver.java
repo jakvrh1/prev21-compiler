@@ -9,9 +9,7 @@ import prev.data.ast.visitor.AstFullVisitor;
 import prev.data.typ.*;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Set;
 
 /**
  * Type resolver.
@@ -22,20 +20,18 @@ import java.util.Set;
 
 public class TypeResolver extends AstFullVisitor<SemType, TypeResolver.Mode> {
 
-    private HashMap<SemRec, SymbTable> declaresComp = new HashMap<>();
+    private final HashMap<SemRec, SymbTable> declaresComp = new HashMap<>();
 
     public boolean isIntCharPtr(SemType type) {
-        if(type == null) return false;
+        if (type == null) return false;
         else if (type.actualType() instanceof SemChar) return true;
         else if (type.actualType() instanceof SemInt) return true;
-        else if (type.actualType() instanceof SemPtr) return true;
-        return false;
+        else return type.actualType() instanceof SemPtr;
     }
 
     public boolean notVoid(SemType type) {
         if (type == null) return false;
-        else if (type.actualType() instanceof SemVoid) return false;
-        return true;
+        else return !(type.actualType() instanceof SemVoid);
     }
 
     public boolean areTwoTypesSame(SemType type1, SemType type2) {
@@ -78,7 +74,7 @@ public class TypeResolver extends AstFullVisitor<SemType, TypeResolver.Mode> {
     @Override
     public SemType visit(AstAtomType atomType, TypeResolver.Mode mode) {
         super.visit(atomType, mode);
-        if(mode != Mode.SECOND) return null;
+        if (mode != Mode.SECOND) return null;
 
         SemType returnType = switch (atomType.type) {
             case VOID -> new SemVoid();
@@ -98,7 +94,7 @@ public class TypeResolver extends AstFullVisitor<SemType, TypeResolver.Mode> {
     public SemType visit(AstArrType arrType, TypeResolver.Mode mode) {
         super.visit(arrType, mode);
 
-        if(mode == Mode.SECOND) {
+        if (mode == Mode.SECOND) {
             SemType exprType = SemAn.isType.get(arrType.elemType);
 
             if (arrType.numElems instanceof AstAtomExpr && ((AstAtomExpr) arrType.numElems).type == AstAtomExpr.Type.INT) {
@@ -118,14 +114,14 @@ public class TypeResolver extends AstFullVisitor<SemType, TypeResolver.Mode> {
                 throw new Report.Error(arrType, "Type error: only non negative constant values can be used for declaring array");
         }
 
-       if(mode == Mode.VALIDATION) {
+        if (mode == Mode.VALIDATION) {
             SemType type = SemAn.isType.get(arrType);
-            SemType elemType = ((SemArr)type).elemType;
-           if (!notVoid(elemType))
-               throw new Report.Error(arrType, "Type error: array must be of non VOID type.");
-       }
+            SemType elemType = ((SemArr) type).elemType;
+            if (!notVoid(elemType))
+                throw new Report.Error(arrType, "Type error: array must be of non VOID type.");
+        }
 
-       return null;
+        return null;
     }
 
     //T3
@@ -152,12 +148,12 @@ public class TypeResolver extends AstFullVisitor<SemType, TypeResolver.Mode> {
             return returnType;
         }
 
-        if(mode == Mode.VALIDATION) {
+        if (mode == Mode.VALIDATION) {
             SemType type = SemAn.isType.get(recType);
-            SemRec rec = ((SemRec)type);
-            for(int i = 0; i < rec.numComps(); ++i) {
+            SemRec rec = ((SemRec) type);
+            for (int i = 0; i < rec.numComps(); ++i) {
                 SemType compType = rec.compType(i);
-                if(!notVoid(compType))
+                if (!notVoid(compType))
                     throw new Report.Error(recType, "Type error: record component of VOID type.");
             }
         }
@@ -291,8 +287,8 @@ public class TypeResolver extends AstFullVisitor<SemType, TypeResolver.Mode> {
             // v6
             case EQU, NEQ:
                 boolean good = false;
-                if (exprType1 == null) { }
-                else if (exprType1.actualType() instanceof SemBool) good = true;
+                if (exprType1 == null) {
+                } else if (exprType1.actualType() instanceof SemBool) good = true;
                 else if (exprType1.actualType() instanceof SemChar) good = true;
                 else if (exprType1.actualType() instanceof SemInt) good = true;
                 else if (exprType1.actualType() instanceof SemPtr) good = true;
@@ -308,8 +304,8 @@ public class TypeResolver extends AstFullVisitor<SemType, TypeResolver.Mode> {
             // v7
             case LEQ, LTH, GEQ, GTH:
                 good = false;
-                if (exprType1 == null) { }
-                else if (exprType1.actualType() instanceof SemChar) good = true;
+                if (exprType1 == null) {
+                } else if (exprType1.actualType() instanceof SemChar) good = true;
                 else if (exprType1.actualType() instanceof SemInt) good = true;
                 else if (exprType1.actualType() instanceof SemPtr) good = true;
 
@@ -403,12 +399,12 @@ public class TypeResolver extends AstFullVisitor<SemType, TypeResolver.Mode> {
         SemType exprType = SemAn.ofType.get(recExpr.rec);
         exprType = exprType.actualType();
 
-        if(exprType instanceof SemRec) {
+        if (exprType instanceof SemRec) {
             SymbTable st = declaresComp.get(exprType);
 
             try {
                 AstDecl ad = st.fnd(recExpr.comp.name);
-                if(ad instanceof AstCompDecl) {
+                if (ad instanceof AstCompDecl) {
                     SemType type = SemAn.isType.get(((AstCompDecl) ad).type);
                     SemAn.ofType.put(recExpr, type);
                     SemAn.declaredAt.put(recExpr.comp, ad);
@@ -662,7 +658,7 @@ public class TypeResolver extends AstFullVisitor<SemType, TypeResolver.Mode> {
     @Override
     public SemType visit(AstNameType nameType, TypeResolver.Mode mode) {
         super.visit(nameType, mode);
-        if(mode != Mode.SECOND) return null;
+        if (mode != Mode.SECOND) return null;
 
         AstDecl nameDecl = SemAn.declaredAt.get(nameType);
 
@@ -690,7 +686,7 @@ public class TypeResolver extends AstFullVisitor<SemType, TypeResolver.Mode> {
         if (type == null)
             Report.warning("SemType of variable declaration [" + varDecl.name + "] is null, location [" + varDecl.location() + "].");
 
-        if(type.actualType() instanceof SemVoid)
+        if (type.actualType() instanceof SemVoid)
             throw new Report.Error(varDecl, "Type error: type can't be VOID.");
 
         return null;

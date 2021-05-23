@@ -24,22 +24,14 @@ public class Interpreter {
     private final Random random;
 
     private final HashMap<Long, Byte> memory;
-
-    private HashMap<MemTemp, Long> temps;
-
     private final HashMap<MemLabel, Long> dataMemLabels;
-
     private final HashMap<MemLabel, Integer> jumpMemLabels;
-
     private final HashMap<MemLabel, LinCodeChunk> callMemLabels;
-
     private final MemTemp SP;
-
-    private MemTemp FP;
-
-    private MemTemp RV;
-
     private final MemTemp HP;
+    private HashMap<MemTemp, Long> temps;
+    private MemTemp FP;
+    private MemTemp RV;
 
     public Interpreter(Vector<LinDataChunk> dataChunks, Vector<LinCodeChunk> codeChunks) {
         random = new Random();
