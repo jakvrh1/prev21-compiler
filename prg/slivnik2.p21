@@ -1,0 +1,99 @@
+fun exit():void
+fun putChar(c:char):void
+fun getChar():char
+
+fun putInt(i:int):void =
+    {
+      if (i<0) then { putChar('-'); i=-i; } else none;
+      if (i==0) then putChar('0') else put(i);
+    }
+    where
+    {
+      fun put(i:int):void =
+          {
+            if (i==0) then none else {
+              put(i/10);
+              putChar(((i%10+('0':int)):char));
+            };
+          }
+    }
+
+fun getInt():int =
+    {
+      sign=1;
+      val=0;
+      c = getChar();
+      if (c=='+') then { sign=+1; c='0'; } else
+      if (c=='-') then { sign=-1; c='0'; } else
+      if (c<'0')|(c>'9') then exit() else none;
+      while ('0'<=c)&(c<='9') do {
+        val=val*10+((c:int)-('0':int));
+        c=getChar();
+      };
+      if (c!=(10:char)) then exit() else none;
+      sign * val;
+    }
+    where
+    {
+      var sign:int
+      var val:int
+      var c:char
+    }
+
+fun putString(s:^char):void =
+    {
+      i=0;
+      while (((s:int)+(i*8):^char)^!=(0:char)) do {
+        putChar(((s:int)+(i*8):^char)^);
+        i=i+1;
+      };
+      none;
+    }
+    where
+    {
+      var i:int
+    }
+
+#---------------------------------------------------------------
+
+fun combs(i:int,n:int,ns:^([32]int)):void =
+    {
+      if i==n then
+        {
+          j=0;
+          while j<n do {
+            putInt(ns^[j]);
+            putChar(' ');
+            j=j+1;
+          };
+          putChar((10:char));
+        } where { var j:int }
+      else
+        {
+          j=0;
+          while j<n do {
+            ns^[i]=j;
+            combs(i+1,n,ns);
+            j=j+1;
+          };
+        } where { var j:int };
+    }
+
+fun main():int =
+    {
+      n=4;
+      {
+        i=0;
+        while i<n do {
+          ns[i]=i;
+          i=i+1;
+        };
+      } where { var i:int };
+      combs(0,n,^ns);
+      0;
+    }
+    where
+    {
+      var n:int
+      var ns:[32]int
+    }

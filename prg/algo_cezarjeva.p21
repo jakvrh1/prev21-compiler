@@ -1,0 +1,48 @@
+var msg : ^char
+var key : int
+
+fun main() : void = {
+    msg = "SLOVENIJA JE LEPA DEZELA NA SONCNI STRANI ALP";
+    key = 10;
+
+    i = 0; c = (65:char);
+    while (c!=(0:char)) do {
+        c = (((msg:int) + 8 * i):^char)^;
+        c = cezarjeva(c);
+        putChar(c);
+        i = i + 1;
+    };
+
+    putChar((10:char));
+} where {
+    var i : int
+    var c : char
+}
+
+fun cezarjeva(c : char) : char = {
+    if (c < 'A' | c > 'Z') then r = c else {
+        r = (((c:int) + key):char);
+        if (r > 'Z') then r = (((r:int) - 26):char) else none;
+    };
+    r;
+} where {
+    var r : char
+}
+
+fun putChar(c:char):void
+
+fun putInt(i:int):void =
+	{
+		if (i<0) then { putChar('-'); i=-i; } else none;
+		if (i==0) then putChar('0') else put(i);
+	}
+	where
+	{
+		fun put(i:int):void =
+        	{
+        		if (i==0) then none else {
+        			put(i/10);
+        			putChar(((i%10+('0':int)):char));
+			};
+		}
+	}

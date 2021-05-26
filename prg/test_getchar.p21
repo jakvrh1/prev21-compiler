@@ -1,0 +1,48 @@
+var c : char
+
+fun main() : void = {
+    putString("Enter q to quit ...");
+    putChar((10:char));
+    c = getChar();
+    while (c != 'q') do {
+        putString("Vpisali ste ");
+        putChar(c);
+        putChar((10:char));
+        c = getChar();
+    };
+    putChar((10:char));
+}
+
+### standard library
+fun getChar():char
+fun putChar(c:char):void
+
+fun putString(s:^char):void =
+    {
+      i=0;
+      while (((s:int)+(i*8):^char)^!=(0:char)) do {
+        putChar(((s:int)+(i*8):^char)^);
+        i=i+1;
+      };
+      none;
+    }
+    where
+    {
+      var i:int
+    }
+
+fun putInt(i:int):void =
+	{
+		if (i<0) then { putChar('-'); i=-i; } else none;
+		if (i==0) then putChar('0') else put(i);
+	}
+	where
+	{
+		fun put(i:int):void =
+        	{
+        		if (i==0) then none else {
+        			put(i/10);
+        			putChar(((i%10+('0':int)):char));
+			};
+		}
+	}

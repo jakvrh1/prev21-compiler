@@ -1,0 +1,19 @@
+fun putChar(c:char):void
+
+fun putString(s:^char):void =
+    {
+      i=0;
+      while (((s:int)+(i*8):^char)^!=(0:char)) do {
+        putChar(((s:int)+(i*8):^char)^);
+        i=i+1;
+      };
+      none;
+    }
+    where {
+      var i:int
+    }
+
+fun main():int =
+    { putString("Hello, world.");
+      putChar((10:char));
+      0; }

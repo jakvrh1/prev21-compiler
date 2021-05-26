@@ -1,0 +1,69 @@
+fun swap(xp : ^int, yp : ^int) : void = {
+    temp = xp^;
+    xp^ = yp^;
+    yp^ = temp;
+} where { var temp : int }
+
+fun putChar(c:char):void
+
+fun putInt(i:int):void =
+    {
+      if (i<0) then { putChar('-'); i=-i; } else none;
+      if (i==0) then putChar('0') else put(i);
+    }
+    where
+    {
+      fun put(i:int):void =
+          {
+            if (i==0) then none else {
+              put(i/10);
+              putChar(((i%10+('0':int)):char));
+            };
+          }
+    }
+
+
+fun putString(s:^char):void =
+    {
+      i=0;
+      while (((s:int)+(i*8):^char)^!=(0:char)) do {
+        putChar(((s:int)+(i*8):^char)^);
+        i=i+1;
+      };
+      none;
+    }
+    where
+    {
+      var i:int
+    }
+
+fun bubbleSort(arr : ^[5]int) : void = {
+    i = 0;
+    while (i < n-1) do {
+        j = 0;
+        while (j < n-i-1) do {
+            if (arr^[j] < arr^[j+1]) then swap(^(arr^[j]),^(arr^[j+1]))
+            else none;
+            j = j+1;
+        };
+        i = i+1;
+    };
+} where {
+    var i : int
+    var j : int
+}
+fun main() : int = {
+    arr[0] = 2;
+    arr[1] = 4;
+    arr[2] = 3;
+    arr[3] = 2;
+    arr[4] = 1;
+    n = 5;
+    bubbleSort(^arr);
+    #arr[0]*10000+arr[1]*1000+arr[2]*100+arr[3]*10+arr[4];
+    putInt(arr[0]*10000+arr[1]*1000+arr[2]*100+arr[3]*10+arr[4]);
+    0;
+}
+var arr : [5] int
+var n : int
+var test : int

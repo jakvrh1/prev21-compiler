@@ -1,0 +1,111 @@
+fun putChar(c:char):void
+
+fun putInt(i:int):void =
+	{
+		if (i<0) then { putChar('-'); i=-i; } else none;
+		if (i==0) then putChar('0') else put(i);
+	}
+	where
+	{
+		fun put(i:int):void =
+        	{
+        		if (i==0) then none else {
+        			put(i/10);
+        			putChar(((i%10+('0':int)):char));
+			};
+		}
+	}
+
+var dp : [105][1005]int
+
+var N : int
+var W : int
+
+var Wi : [105] int
+var Vi : [105] int
+
+fun solve(n : int, w : int) : int = {
+    if n == N
+    then r = 0
+    else if w == W
+    then r = 0
+    else if (dp[n][w] != -1)
+    then r = dp[n][w]
+    else {
+        dp[n][w] = solve(n + 1, w);
+        if ((w + Wi[n]) <= W)
+        then dp[n][w] = max(dp[n][w], solve(n + 1, w + Wi[n]) + Vi[n])
+        else none;
+
+        r = dp[n][w];
+    };
+    r;
+} where {
+    var r : int
+}
+
+fun max(i1 : int, i2 : int) : int = {
+    if i1 >= i2
+    then r1 = i1
+    else r1 = i2;
+
+    r1;
+} where {
+    var r1 : int
+}
+
+fun main() : int = {
+    init_dp();
+
+    test1_init();
+    #test2_init();
+
+    N = solve(0, 0);
+    putInt(N);
+    putChar((10:char));
+    N;
+}
+
+fun init_dp() : void = {
+    i = 0;
+    while i < 105 do {
+        j = 0;
+        while j < 1005 do {
+            dp[i][j] = -1;
+            j = j + 1;
+        };
+
+        i = i + 1;
+    };
+} where {
+    var i : int
+    var j : int
+}
+
+fun test2_init() : void = {
+    N = 6;
+    W = 15;
+    Wi[0] = 6;
+    Wi[1] = 5;
+    Wi[2] = 6;
+    Wi[3] = 6;
+    Wi[4] = 3;
+    Wi[5] = 7;
+    Vi[0] = 5;
+    Vi[1] = 6;
+    Vi[2] = 4;
+    Vi[3] = 6;
+    Vi[4] = 5;
+    Vi[5] = 2;
+}
+
+fun test1_init() : void = {
+    N = 3;
+    W = 8;
+    Wi[0] = 3;
+    Wi[1] = 4;
+    Wi[2] = 5;
+    Vi[0] = 30;
+    Vi[1] = 50;
+    Vi[2] = 60;
+}

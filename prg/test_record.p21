@@ -1,0 +1,70 @@
+typ complex = {
+    a : int,
+    b : int
+}
+
+fun putString(s:^char):void =
+    {
+      i=0;
+      while (((s:int)+(i*8):^char)^!=(0:char)) do {
+        putChar(((s:int)+(i*8):^char)^);
+        i=i+1;
+      };
+      none;
+    }
+    where
+    {
+      var i:int
+    }
+
+fun out(c : ^complex) : void = {
+    putString("complex(Re = ");
+    putInt(c^.a);
+    putString(", Im = ");
+    putInt(c^.b);
+    putString(")");
+    putChar((10:char));
+}
+
+fun sum(z1 : ^complex, z2 : ^complex) : ^complex = {
+   z = ((new(16)) : ^complex);
+   z^.a = z1^.a + z2^.b;
+   z^.b = z1^.b + z2^.b;
+   z;
+} where {
+    var z : ^complex
+}
+
+var c1 : complex
+var c2 : complex
+var c3 : ^complex
+
+fun main() : void = {
+    c1.a = 1;
+    c1.b = 2;
+    c2.a = -2;
+    c2.b = -1;
+
+    c3 = sum(^c1, ^c2);
+    out(c3);
+}
+
+# standard library
+
+fun putChar(c : char) : void
+
+fun putInt(i:int):void =
+    {
+      if (i<0) then { putChar('-'); i=-i; } else none;
+      if (i==0) then putChar('0') else put(i);
+    }
+    where
+    {
+      fun put(i:int):void =
+          {
+            if (i==0) then none else {
+              put(i/10);
+              putChar(((i%10+('0':int)):char));
+            };
+          }
+    }

@@ -1,0 +1,76 @@
+var a : ^int
+var b : int
+
+fun main() : void = {
+    a = ((new 1024) : ^int);
+
+    # Set numbers
+    i = 0;
+    while (i < 1024) do {
+        (((a:int) + 8 * i) : ^int)^ = i;
+        i = i + 1;
+    } where {
+        var ptr : ^int
+    };
+
+
+    putString("Prvotna lokacija: ");
+    b = (a:int);
+    putInt(b); putChar((10:char));
+    putString("Tukaj mora biti 81: ");
+    putInt((((a:int) + 8*81) : ^int)^);
+    putChar((10:char));
+    putString("Tukaj mora biti 1005: ");
+    putInt((((a:int) + 8*1005) : ^int)^);
+    putChar((10:char));
+
+    del a;
+    a = ((new 1024) : ^int);
+    putString("Nova lokacija: ");
+    putInt((a:int)); putChar((10:char));
+    putString("Razlika: ");
+    putInt((a:int) - b); putChar((10:char));
+    putString("Tukaj bo kr neki: ");
+    putInt((((a:int) + 8*2) : ^int)^);
+    putChar((10:char));
+    (((a:int) + 8*2) : ^int)^ = 2;
+    putString("Tukaj mora biti 2: ");
+    putInt((((a:int) + 8*2) : ^int)^);
+    putChar((10:char));
+    del a;
+} where {
+    var i : int
+}
+
+### standard library
+fun putChar(c:char):void
+
+fun putString(s:^char):void =
+    {
+      i=0;
+      while (((s:int)+(i*8):^char)^!=(0:char)) do {
+        putChar(((s:int)+(i*8):^char)^);
+        i=i+1;
+      };
+      none;
+    }
+    where
+    {
+      var i:int
+    }
+
+fun putInt(i:int):void =
+	{
+		if (i<0) then { putChar('-'); i=-i; } else none;
+		if (i==0) then putChar('0') else put(i);
+	}
+	where
+	{
+		fun put(i:int):void =
+        	{
+        		if (i==0) then none else {
+        			put(i/10);
+        			putChar(((i%10+('0':int)):char));
+			};
+		}
+	}

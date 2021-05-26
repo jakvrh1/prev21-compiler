@@ -1,0 +1,79 @@
+var n : int
+var arr : ^int
+
+fun get(row : int, col : int) : int =
+    (((arr:int) + 8 * row * n + 8 * col) : ^int)^
+
+fun set(row : int, col : int, val : int) : void = {
+    (((arr:int) + 8 * row * n + 8 * col) : ^int)^ = val;
+}
+
+fun places(n : int) : int = {
+    places = 0;
+    while (n > 0) do {
+        n = n / 10;
+        places = places + 1;
+    };
+    places;
+} where {
+    var places : int
+}
+
+fun main() : void = {
+    n = 12;
+    room = 8; # naj bo sodo
+    spaces = room * (n - 1) / 2;
+    arr = ((new ((n+1)*(n+1))) : ^int);
+
+    row = 0;
+    while row < n do {
+        col = 0;
+        k = 0;
+        while (k < spaces) do {
+	    putChar(' ');
+	    k = k + 1;
+        };
+        spaces = spaces - room/2;
+        while col <= row do {
+            if (col == 0 | col == row) then set(row, col, 1) else set(row, col, get(row-1, col-1) + get(row-1, col));
+            putInt(get(row,col));
+            z = 0;
+            while (z < room - places(get(row,col))) do {
+                putChar(' ');
+                z = z + 1;
+            };
+            col = col + 1;
+        } where {
+            var z : int
+        };
+        putChar((10:char));
+        row = row + 1;
+    } where {
+        var col : int
+        var k : int
+    };
+} where {
+    var row : int
+    var spaces : int
+    var room : int
+}
+
+# standardna knjiznica
+fun putChar(c:char):void
+fun getChar():char
+
+fun putInt(i:int):void =
+    {
+      if (i<0) then { putChar('-'); i=-i; } else none;
+      if (i==0) then putChar('0') else put(i);
+    }
+    where
+    {
+      fun put(i:int):void =
+          {
+            if (i==0) then none else {
+              put(i/10);
+              putChar(((i%10+('0':int)):char));
+            };
+          }
+    }

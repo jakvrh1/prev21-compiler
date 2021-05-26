@@ -1,0 +1,136 @@
+var z : ^node
+var c : ^node
+var size : int
+typ node = { val : int, ptr : ^node}
+var k : ^node
+
+fun create_node(val:int) : ^node = {
+    t = ( new(16):^node);
+    t^.val = val;
+    t^.ptr = (nil:^node);
+    t;
+} where {
+    var t : ^node
+}
+
+fun init_list() : void = {
+    z = (nil:^node);
+    size = 0;
+}
+
+fun add_element(val:int) : void = {
+    if z == (nil:^node) then {
+       z = create_node(val);
+       c = z;
+    } else {
+        c^.ptr = create_node(val);
+        c = c^.ptr;
+    };
+    size = size + 1;
+}
+
+fun display_elements() : void = {
+   t = z;
+   while t != (nil:^node) do {
+        putInt(t^.val);
+        putChar((10:char));
+        t = t^.ptr;
+   };
+} where {
+    var t : ^node
+}
+
+fun get_size() : int = {
+   size;
+}
+
+fun remove_element(ind:int) : int = {
+    if (ind < 0 | ind >= size) then r = -1
+    #special first case
+    else if (ind == 0 & size > 0) then {
+        t = z;
+        z = z^.ptr;
+        del((t:^void));
+        size = size - 1;
+        r = 1;
+    }
+    else  {
+     r = remove_element_hidden(ind, 0, (nil:^node), z);
+    };
+    r;
+} where {
+    var r : int
+    var t : ^node
+}
+
+fun remove_element_hidden(ind:int, icr:int, n1:^node, n2:^node) : int = {
+    if ind >= size then {
+        r = 0;
+    }
+    else if icr == ind then {
+        n2 = n2^.ptr;
+
+        #we need to free
+        del((n1^.ptr:^void));
+        size = size - 1;
+
+        n1^.ptr = n2;
+
+        r = 1;
+    } else {
+        r = remove_element_hidden(ind, icr + 1, n2, n2^.ptr);
+    };
+
+    r;
+} where {
+    var t : ^node
+    var r : int
+}
+
+fun main() : void = {
+    init_list();
+
+    add_element(10);
+    add_element(20);
+    add_element(30);
+    add_element(40);
+    add_element(50);
+
+    display_elements();
+    putChar((10:char));
+
+    putInt(get_size());
+    putChar((10:char));
+
+    a = remove_element(3);
+    putInt(a);
+    putChar((10:char));
+
+    putInt(get_size());
+    putChar((10:char));
+
+    display_elements();
+
+
+} where {
+    var a : int
+}
+
+# STANDARD THINGS
+fun putChar(c:char):void
+
+fun putInt(i:int):void =
+    {
+      if (i<0) then { putChar('-'); i=-i; } else none;
+      if (i==0) then putChar('0') else put(i);
+    }
+    where
+    {
+      fun put(i:int):void =
+          {
+            if (i==0) then none else {
+              put(i/10);
+              putChar(((i%10+('0':int)):char));
+            };
+          }
+    }
